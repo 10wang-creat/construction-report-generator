@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>施工報告產生器 (Word)</title>
+    <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans TC', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #2b6cb0 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: #fff;
+            padding: 25px 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .header-icon { font-size: 36px; }
+        .header h1 { font-size: 22px; font-weight: 700; }
+        .header p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+        .header .badge {
+            background: #48bb78;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .content { padding: 25px 30px; }
+        .section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .section-num {
+            background: #3182ce;
+            color: #fff;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .section-title { font-size: 16px; font-weight: 700; color: #2d3748; }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group:last-child { margin-bottom: 0; }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 6px;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 11px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(49,130,206,0.1);
+        }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .upload-zone {
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fff;
+        }
+        .upload-zone:hover, .upload-zone.active {
+            border-color: #3182ce;
+            background: #ebf8ff;
+        }
+        .upload-icon { font-size: 40px; margin-bottom: 10px; }
+        .upload-text { color: #4a5568; font-size: 15px; font-weight: 500; }
+        .upload-hint { color: #a0aec0; font-size: 12px; margin-top: 6px; }
+
+        /* Logo 上傳區 */
+        .logo-section {
+            background: #f0f9ff;
+            border: 2px dashed #3182ce;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .logo-preview {
+            max-width: 150px;
+            max-height: 150px;
+            margin: 10px auto;
+            display: block;
+        }
+        .logo-label {
+            font-size: 14px;
+            color: #3182ce;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .btn-upload-logo {
+            background: #3182ce;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .btn-upload-logo:hover { background: #2c5282; }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .photo-card {
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.2s;
+            position: relative;
+            cursor: grab;
+            user-select: none;
+        }
+        .photo-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+        }
+        .photo-card.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+            cursor: grabbing;
+        }
+        .photo-card.drag-over {
+            border: 3px dashed #3182ce;
+            background: #ebf8ff;
+        }
+        .photo-card img {
+            width: 100%;
+            height: 130px;
+            object-fit: cover;
+            pointer-events: none;
+        }
+        .photo-card-body { padding: 12px; }
+        .photo-card-num {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            pointer-events: none;
+        }
+        .photo-card-drag {
+            position: absolute;
+            top: 8px;
+            right: 36px;
+            background: rgba(49, 130, 206, 0.9);
+            color: #fff;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: grab;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .photo-card:hover .photo-card-drag { opacity: 1; }
+        .photo-card-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #e53e3e;
+            color: #fff;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .photo-card:hover .photo-card-delete { opacity: 1; }
+        .photo-card input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: inherit;
+        }
+        .photo-card input:focus {
+            outline: none;
+            border-color: #3182ce;
+        }
+        .photo-card input.has-value {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+        .photo-card-arrows {
+            position: absolute;
+            bottom: 52px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .photo-card:hover .photo-card-arrows { opacity: 1; }
+        .arrow-btn {
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .arrow-btn:hover {
+            background: #3182ce;
+            transform: scale(1.1);
+        }
+        .arrow-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-generate {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #2b6cb0 0%, #2c5282 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(44,82,130,0.35);
+        }
+        .btn-generate:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .photo-count {
+            background: #ebf8ff;
+            color: #2b6cb0;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .sort-hint { 
+            font-size: 12px; 
+            color: #718096;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sort-hint .drag-icon {
+            background: #e2e8f0;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        .loading {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+        }
+        .loading.show { display: flex; }
+        .spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #3182ce;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .loading-text { margin-top: 12px; color: #4a5568; font-size: 14px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .empty-photos {
+            text-align: center;
+            padding: 40px;
+            color: #a0aec0;
+        }
+        .empty-photos-icon { font-size: 48px; margin-bottom: 10px; }
+        .success-msg {
+            background: #c6f6d5;
+            color: #276749;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+        .success-msg.show { display: flex; }
+        .error-msg {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: none;
+        }
+        .error-msg.show { display: block; }
+        
+        @media (max-width: 600px) {
+            .form-row { grid-template-columns: 1fr; }
+            .photo-grid { grid-template-columns: 1fr 1fr; }
+            body { padding: 10px; }
+            .content { padding: 15px; }
+            .photo-card-arrows { opacity: 1; }
+            .photo-card-delete { opacity: 1; }
+            .photo-card-drag { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-icon">📋</div>
+            <div>
+                <h1>施工報告產生器 <span class="badge">Word 版</span></h1>
+                <p>封面頁 + 照片頁（每頁4張照片）・依照範本格式產生</p>
+            </div>
+        </div>
+        <div class="content">
+            <div class="success-msg" id="successMsg">
+                <span>✅</span>
+                <span>報告已成功產生並下載！</span>
+            </div>
+            <div class="error-msg" id="errorMsg"></div>
+
+            <!-- Logo 上傳區 -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-num">0</span>
+                    <span class="section-title">公司 Logo（選填）</span>
+                </div>
+                <div class="logo-section">
+                    <div class="logo-label">📷 上傳公司 Logo（PNG 格式建議）</div>
+                    <img id="logoPreview" class="logo-preview" style="display:none;">
+                    <div id="logoPlaceholder">尚未上傳 Logo，將使用預設樣式</div>
+                    <button class="btn-upload-logo" onclick="document.getElementById('logoInput').click()">選擇 Logo</button>
+                    <input type="file" id="logoInput" accept="image/*" hidden>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-num">1</span>
+                    <span class="section-title">工程資訊</span>
+                </div>
+                <div class="form-group">
+                    <label>工程名稱 *</label>
+                    <input type="text" id="projectName" placeholder="例：昌益國寶社區-消防灑水改善工程">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>報告日期</label>
+                        <input type="text" id="reportDate" placeholder="例：114年01月15日">
+                    </div>
+                    <div class="form-group">
+                        <label>施工日期</label>
+                        <input type="text" id="workDate" placeholder="例：2025/01/01~01/31">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>施工說明</label>
+                    <textarea id="description" placeholder="請輸入施工說明..."></textarea>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-num">2</span>
+                    <span class="section-title">施工照片</span>
+                </div>
+                <div class="upload-zone" id="uploadZone">
+                    <div class="upload-icon">📷</div>
+                    <div class="upload-text">點擊或拖曳照片上傳</div>
+                    <div class="upload-hint">支援 JPG、PNG，可多選</div>
+                    <input type="file" id="fileInput" multiple accept="image/*" hidden>
+                </div>
+                <div id="photoContainer">
+                    <div class="empty-photos" id="emptyPhotos">
+                        <div class="empty-photos-icon">🖼️</div>
+                        <div>尚未上傳照片</div>
+                    </div>
+                </div>
+            </div>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div class="loading-text">正在產生 Word 報告...</div>
+            </div>
+            <button class="btn-generate" id="generateBtn">
+                <span>📄</span> 產生 Word 報告
+            </button>
+        </div>
+    </div>
+    <script>
+        const { Document, Packer, Paragraph, TextRun, ImageRun, Table, TableRow, TableCell, 
+                Header, Footer, AlignmentType, PageBreak, WidthType, BorderStyle, 
+                VerticalAlign, ShadingType, PageNumber, HeadingLevel } = docx;
+        
+        let photos = [];
+        let logoData = null;
+        let draggedIndex = null;
+        
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const photoContainer = document.getElementById('photoContainer');
+        const emptyPhotos = document.getElementById('emptyPhotos');
+        const generateBtn = document.getElementById('generateBtn');
+        const loading = document.getElementById('loading');
+        const successMsg = document.getElementById('successMsg');
+        const errorMsg = document.getElementById('errorMsg');
+        const logoInput = document.getElementById('logoInput');
+        const logoPreview = document.getElementById('logoPreview');
+        const logoPlaceholder = document.getElementById('logoPlaceholder');
+        
+        // Logo 上傳處理
+        logoInput.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = evt => {
+                    logoPreview.src = evt.target.result;
+                    logoPreview.style.display = 'block';
+                    logoPlaceholder.style.display = 'none';
+                    
+                    const bufferReader = new FileReader();
+                    bufferReader.onload = bufEvt => {
+                        logoData = {
+                            data: bufEvt.target.result,
+                            type: file.type.includes('png') ? 'png' : 'jpg'
+                        };
+                    };
+                    bufferReader.readAsArrayBuffer(file);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        uploadZone.addEventListener('click', () => fileInput.click());
+        uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('active'); });
+        uploadZone.addEventListener('dragleave', () => { uploadZone.classList.remove('active'); });
+        uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('active'); handleFiles(e.dataTransfer.files); });
+        fileInput.addEventListener('change', e => { handleFiles(e.target.files); fileInput.value = ''; });
+        generateBtn.addEventListener('click', generateReport);
+        
+        function getImageDimensions(dataUrl) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve({ width: img.width, height: img.height });
+                img.onerror = () => resolve({ width: 800, height: 600 });
+                img.src = dataUrl;
+            });
+        }
+        
+        function handleFiles(files) {
+            hideMessages();
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/')) return;
+                const reader = new FileReader();
+                reader.onload = async e => {
+                    const id = 'photo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    const dimensions = await getImageDimensions(e.target.result);
+                    const arrayBufferReader = new FileReader();
+                    arrayBufferReader.onload = evt => {
+                        photos.push({ id, name: file.name, data: e.target.result, buffer: evt.target.result, type: file.type.includes('png') ? 'png' : 'jpg', caption: '', width: dimensions.width, height: dimensions.height });
+                        renderPhotos();
+                    };
+                    arrayBufferReader.readAsArrayBuffer(file);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        function renderPhotos() {
+            if (photos.length === 0) { 
+                photoContainer.innerHTML = ''; 
+                photoContainer.appendChild(emptyPhotos); 
+                emptyPhotos.style.display = 'block'; 
+                return; 
+            }
+            emptyPhotos.style.display = 'none';
+            let html = `<div class="status-bar">
+                <span class="photo-count">共 ${photos.length} 張照片</span>
+                <span class="sort-hint">
+                    <span class="drag-icon">🖐️ 拖曳</span> 或 
+                    <span class="drag-icon">◀ ▶ 按鈕</span> 調整順序
+                </span>
+            </div><div class="photo-grid">`;
+            
+            photos.forEach((photo, index) => {
+                const hasCaption = photo.caption && photo.caption.trim() !== '';
+                const isFirst = index === 0;
+                const isLast = index === photos.length - 1;
+                
+                html += `<div class="photo-card" data-id="${photo.id}" data-index="${index}" draggable="true">
+                    <span class="photo-card-num">${index + 1}</span>
+                    <span class="photo-card-drag" title="拖曳排序">⋮⋮</span>
+                    <button class="photo-card-delete" onclick="deletePhoto('${photo.id}')" type="button">✕</button>
+                    <img src="${photo.data}" alt="${photo.name}">
+                    <div class="photo-card-arrows">
+                        <button class="arrow-btn" onclick="movePhoto(${index}, -1)" ${isFirst ? 'disabled' : ''} title="向前移動">◀</button>
+                        <button class="arrow-btn" onclick="movePhoto(${index}, 1)" ${isLast ? 'disabled' : ''} title="向後移動">▶</button>
+                    </div>
+                    <div class="photo-card-body">
+                        <input type="text" id="caption_${photo.id}" class="${hasCaption ? 'has-value' : ''}" 
+                            placeholder="請輸入照片說明..." value="${photo.caption}" 
+                            oninput="updateCaption('${photo.id}', this.value, this)">
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+            photoContainer.innerHTML = html;
+            initDragAndDrop();
+        }
+        
+        function initDragAndDrop() {
+            const cards = document.querySelectorAll('.photo-card');
+            cards.forEach(card => {
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragend', handleDragEnd);
+                card.addEventListener('dragover', handleDragOver);
+                card.addEventListener('dragenter', handleDragEnter);
+                card.addEventListener('dragleave', handleDragLeave);
+                card.addEventListener('drop', handleDrop);
+            });
+        }
+        
+        function handleDragStart(e) {
+            draggedIndex = parseInt(this.dataset.index);
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', draggedIndex);
+            setTimeout(() => { this.style.opacity = '0.4'; }, 0);
+        }
+        
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            this.style.opacity = '1';
+            document.querySelectorAll('.photo-card').forEach(card => { card.classList.remove('drag-over'); });
+            draggedIndex = null;
+        }
+        
+        function handleDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+        function handleDragEnter(e) { e.preventDefault(); if (parseInt(this.dataset.index) !== draggedIndex) this.classList.add('drag-over'); }
+        function handleDragLeave(e) { this.classList.remove('drag-over'); }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            const targetIndex = parseInt(this.dataset.index);
+            if (draggedIndex !== null && draggedIndex !== targetIndex) {
+                syncAllCaptions();
+                const [movedPhoto] = photos.splice(draggedIndex, 1);
+                photos.splice(targetIndex, 0, movedPhoto);
+                renderPhotos();
+            }
+        }
+        
+        function movePhoto(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= photos.length) return;
+            syncAllCaptions();
+            [photos[index], photos[newIndex]] = [photos[newIndex], photos[index]];
+            renderPhotos();
+        }
+        
+        function updateCaption(id, value, inputElement) { 
+            const photo = photos.find(p => p.id === id); 
+            if (photo) { 
+                photo.caption = value; 
+                if (inputElement) inputElement.classList.toggle('has-value', value && value.trim() !== ''); 
+            } 
+        }
+        
+        function deletePhoto(id) { syncAllCaptions(); photos = photos.filter(p => p.id !== id); renderPhotos(); }
+        function hideMessages() { successMsg.classList.remove('show'); errorMsg.classList.remove('show'); }
+        function showError(msg) { errorMsg.textContent = msg; errorMsg.classList.add('show'); errorMsg.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        function showSuccess() { successMsg.classList.add('show'); }
+        function syncAllCaptions() { photos.forEach(photo => { const input = document.getElementById('caption_' + photo.id); if (input) photo.caption = input.value; }); }
+
+        // 計算縮放尺寸以適應最大寬高（以 EMU 為單位）
+        function calculateScaledSizeEMU(originalWidth, originalHeight, maxWidthEMU, maxHeightEMU) {
+            const widthRatio = maxWidthEMU / originalWidth;
+            const heightRatio = maxHeightEMU / originalHeight;
+            const ratio = Math.min(widthRatio, heightRatio);
+            return { 
+                width: Math.round(originalWidth * ratio), 
+                height: Math.round(originalHeight * ratio) 
+            };
+        }
+        
+        // 將 EMU 轉換為像素（docx-js 使用像素）
+        // 1 inch = 914400 EMU = 96 px (螢幕 DPI)
+        function emuToPixels(emu) {
+            return Math.round(emu / 914400 * 96);
+        }
+        
+        async function generateReport() {
+            hideMessages();
+            syncAllCaptions();
+            const projectName = document.getElementById('projectName').value.trim();
+            const reportDate = document.getElementById('reportDate').value.trim() || new Date().toLocaleDateString('zh-TW');
+            const description = document.getElementById('description').value.trim();
+            
+            if (!projectName) { showError('❌ 請填寫工程名稱'); document.getElementById('projectName').focus(); return; }
+            if (photos.length === 0) { showError('❌ 請上傳至少一張照片'); return; }
+            const missingIndex = photos.findIndex(p => !p.caption || p.caption.trim() === '');
+            if (missingIndex >= 0) { showError(`❌ 請為第 ${missingIndex + 1} 張照片填寫說明`); const input = document.getElementById('caption_' + photos[missingIndex].id); if (input) input.focus(); return; }
+            
+            loading.classList.add('show');
+            generateBtn.disabled = true;
+            
+            try {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // 顏色定義
+                const TEAL = "2AAFB3";
+                const DARK_TEAL = "1A7A7D";
+                const RED = "E63B2E";
+                const GRAY = "666666";
+                const LIGHT_GRAY = "CCCCCC";
+                const LIGHT_TEAL_BG = "F0FAFA";
+                
+                // 邊框樣式
+                const thinBorder = { style: BorderStyle.SINGLE, size: 1, color: LIGHT_GRAY };
+                const noBorder = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
+                const cellBorders = { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder };
+                const noBorders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
+                
+                // 照片尺寸（基於範本）- EMU 單位
+                // 封面 Logo: 1143000 × 1333500 EMU
+                // 照片頁照片: 2095500 × 2790825 EMU
+                const coverLogoWidthEMU = 1143000;
+                const coverLogoHeightEMU = 1333500;
+                const photoWidthEMU = 2095500;
+                const photoHeightEMU = 2790825;
+                const headerLogoWidthEMU = 500062;
+                const headerLogoHeightEMU = 583406;
+
+                // 建立封面頁內容
+                const coverChildren = [];
+                
+                // 封面 - Logo（如果有上傳）
+                if (logoData) {
+                    const logoSize = calculateScaledSizeEMU(coverLogoWidthEMU, coverLogoHeightEMU, coverLogoWidthEMU, coverLogoHeightEMU);
+                    coverChildren.push(new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        spacing: { before: 400, after: 100 },
+                        children: [new ImageRun({
+                            type: logoData.type,
+                            data: logoData.data,
+                            transformation: { width: emuToPixels(logoSize.width), height: emuToPixels(logoSize.height) }
+                        })]
+                    }));
+                } else {
+                    // 沒有 Logo 時顯示公司名稱
+                    coverChildren.push(new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        spacing: { before: 600, after: 200 },
+                        children: [new TextRun({ text: "尚緯消防工程行", bold: true, size: 56, color: DARK_TEAL, font: "微軟正黑體" })]
+                    }));
+                }
+                
+                // 封面 - 標題「施 工 報 告 書」
+                coverChildren.push(new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    spacing: { before: 200, after: 100 },
+                    children: [new TextRun({ text: "施 工 報 告 書", bold: true, size: 72, color: TEAL, font: "微軟正黑體" })]
+                }));
+                
+                // 青綠色分隔線（使用特殊字符）
+                coverChildren.push(new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    spacing: { after: 400 },
+                    children: [new TextRun({ text: "━━━━━━━━━━━━━━━━━━━━", color: TEAL, size: 20 })]
+                }));
+                
+                // 工程資訊表格（2欄）- 置中
+                const infoTable = new Table({
+                    alignment: AlignmentType.CENTER,
+                    columnWidths: [2340, 7020],
+                    rows: [
+                        // 工程名稱列
+                        new TableRow({
+                            children: [
+                                new TableCell({
+                                    width: { size: 2340, type: WidthType.DXA },
+                                    borders: cellBorders,
+                                    shading: { fill: TEAL, type: ShadingType.CLEAR },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    children: [new Paragraph({
+                                        alignment: AlignmentType.CENTER,
+                                        spacing: { before: 120, after: 120 },
+                                        children: [new TextRun({ text: "工程名稱", bold: true, color: "FFFFFF", size: 24, font: "微軟正黑體" })]
+                                    })]
+                                }),
+                                new TableCell({
+                                    width: { size: 7020, type: WidthType.DXA },
+                                    borders: cellBorders,
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    children: [new Paragraph({
+                                        alignment: AlignmentType.CENTER,
+                                        spacing: { before: 120, after: 120 },
+                                        children: [new TextRun({ text: projectName, size: 24, font: "微軟正黑體" })]
+                                    })]
+                                })
+                            ]
+                        }),
+                        // 報告日期列
+                        new TableRow({
+                            children: [
+                                new TableCell({
+                                    width: { size: 2340, type: WidthType.DXA },
+                                    borders: cellBorders,
+                                    shading: { fill: TEAL, type: ShadingType.CLEAR },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    children: [new Paragraph({
+                                        alignment: AlignmentType.CENTER,
+                                        spacing: { before: 120, after: 120 },
+                                        children: [new TextRun({ text: "報告日期", bold: true, color: "FFFFFF", size: 24, font: "微軟正黑體" })]
+                                    })]
+                                }),
+                                new TableCell({
+                                    width: { size: 7020, type: WidthType.DXA },
+                                    borders: cellBorders,
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    children: [new Paragraph({
+                                        alignment: AlignmentType.CENTER,
+                                        spacing: { before: 120, after: 120 },
+                                        children: [new TextRun({ text: reportDate, size: 24, font: "微軟正黑體" })]
+                                    })]
+                                })
+                            ]
+                        })
+                    ]
+                });
+                coverChildren.push(infoTable);
+                
+                // 空行
+                coverChildren.push(new Paragraph({ spacing: { before: 400, after: 200 }, children: [] }));
+                
+                // 「一、施工說明」標題
+                coverChildren.push(new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    spacing: { before: 200, after: 200 },
+                    children: [new TextRun({ text: "一、施工說明", bold: true, size: 28, color: TEAL, font: "微軟正黑體" })]
+                }));
+                
+                // 施工說明內容框（單欄表格模擬）- 置中
+                const descTable = new Table({
+                    alignment: AlignmentType.CENTER,
+                    columnWidths: [9360],
+                    rows: [
+                        new TableRow({
+                            height: { value: 4762, rule: "atLeast" },
+                            children: [
+                                new TableCell({
+                                    width: { size: 9360, type: WidthType.DXA },
+                                    borders: cellBorders,
+                                    children: [new Paragraph({
+                                        spacing: { before: 200, after: 200 },
+                                        indent: { left: 200 },
+                                        children: [new TextRun({ text: description || "（請填入施工說明內容）", size: 22, font: "微軟正黑體" })]
+                                    })]
+                                })
+                            ]
+                        })
+                    ]
+                });
+                coverChildren.push(descTable);
+                
+                // 空行
+                coverChildren.push(new Paragraph({ spacing: { before: 400, after: 200 }, children: [] }));
+                
+                // 「二、施工照片(如下頁)」
+                coverChildren.push(new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    spacing: { before: 200 },
+                    children: [new TextRun({ text: "二、施工照片(如下頁)", bold: true, size: 28, color: TEAL, font: "微軟正黑體" })]
+                }));
+
+                // 建立照片頁內容
+                const photoPageChildren = [];
+                
+                // 每頁4張照片（2欄 × 2列）
+                for (let pageStart = 0; pageStart < photos.length; pageStart += 4) {
+                    if (pageStart > 0) {
+                        photoPageChildren.push(new Paragraph({ children: [new PageBreak()] }));
+                    }
+                    
+                    const pagePhotos = photos.slice(pageStart, pageStart + 4);
+                    const photoRows = [];
+                    
+                    // 每兩張為一組（一列）
+                    for (let i = 0; i < pagePhotos.length; i += 2) {
+                        const photo1 = pagePhotos[i];
+                        const photo2 = pagePhotos[i + 1];
+                        
+                        // 照片列
+                        const photoCells = [];
+                        
+                        // 第一張照片
+                        const scaled1 = calculateScaledSizeEMU(photo1.width, photo1.height, photoWidthEMU, photoHeightEMU);
+                        photoCells.push(new TableCell({
+                            width: { size: 4680, type: WidthType.DXA },
+                            borders: cellBorders,
+                            verticalAlign: VerticalAlign.CENTER,
+                            children: [new Paragraph({
+                                alignment: AlignmentType.CENTER,
+                                children: [new ImageRun({
+                                    type: photo1.type,
+                                    data: photo1.buffer,
+                                    transformation: { width: emuToPixels(scaled1.width), height: emuToPixels(scaled1.height) }
+                                })]
+                            })]
+                        }));
+                        
+                        // 第二張照片（如果有）
+                        if (photo2) {
+                            const scaled2 = calculateScaledSizeEMU(photo2.width, photo2.height, photoWidthEMU, photoHeightEMU);
+                            photoCells.push(new TableCell({
+                                width: { size: 4680, type: WidthType.DXA },
+                                borders: cellBorders,
+                                verticalAlign: VerticalAlign.CENTER,
+                                children: [new Paragraph({
+                                    alignment: AlignmentType.CENTER,
+                                    children: [new ImageRun({
+                                        type: photo2.type,
+                                        data: photo2.buffer,
+                                        transformation: { width: emuToPixels(scaled2.width), height: emuToPixels(scaled2.height) }
+                                    })]
+                                })]
+                            }));
+                        } else {
+                            // 空白儲存格
+                            photoCells.push(new TableCell({
+                                width: { size: 4680, type: WidthType.DXA },
+                                borders: cellBorders,
+                                children: [new Paragraph({ children: [] })]
+                            }));
+                        }
+                        
+                        photoRows.push(new TableRow({
+                            height: { value: 5102, rule: "atLeast" },
+                            children: photoCells
+                        }));
+                        
+                        // 說明列
+                        const captionCells = [];
+                        
+                        // 第一張說明
+                        captionCells.push(new TableCell({
+                            width: { size: 4680, type: WidthType.DXA },
+                            borders: cellBorders,
+                            shading: { fill: LIGHT_TEAL_BG, type: ShadingType.CLEAR },
+                            verticalAlign: VerticalAlign.CENTER,
+                            children: [new Paragraph({
+                                alignment: AlignmentType.CENTER,
+                                children: [new TextRun({ text: photo1.caption, size: 20, font: "微軟正黑體" })]
+                            })]
+                        }));
+                        
+                        // 第二張說明（如果有）
+                        if (photo2) {
+                            captionCells.push(new TableCell({
+                                width: { size: 4680, type: WidthType.DXA },
+                                borders: cellBorders,
+                                shading: { fill: LIGHT_TEAL_BG, type: ShadingType.CLEAR },
+                                verticalAlign: VerticalAlign.CENTER,
+                                children: [new Paragraph({
+                                    alignment: AlignmentType.CENTER,
+                                    children: [new TextRun({ text: photo2.caption, size: 20, font: "微軟正黑體" })]
+                                })]
+                            }));
+                        } else {
+                            captionCells.push(new TableCell({
+                                width: { size: 4680, type: WidthType.DXA },
+                                borders: cellBorders,
+                                shading: { fill: LIGHT_TEAL_BG, type: ShadingType.CLEAR },
+                                children: [new Paragraph({ children: [] })]
+                            }));
+                        }
+                        
+                        photoRows.push(new TableRow({
+                            height: { value: 1134, rule: "atLeast" },
+                            children: captionCells
+                        }));
+                    }
+                    
+                    // 建立照片表格 - 置中
+                    const photoTable = new Table({
+                        alignment: AlignmentType.CENTER,
+                        columnWidths: [4680, 4680],
+                        rows: photoRows
+                    });
+                    
+                    photoPageChildren.push(photoTable);
+                }
+                
+                // 建立頁首（只用於照片頁）- 置中
+                const headerTable = new Table({
+                    alignment: AlignmentType.CENTER,
+                    columnWidths: [2000, 5360, 2000],
+                    rows: [
+                        new TableRow({
+                            children: [
+                                // 左欄 - Logo（如果有）或空白
+                                new TableCell({
+                                    width: { size: 2000, type: WidthType.DXA },
+                                    borders: noBorders,
+                                    children: logoData ? [new Paragraph({
+                                        children: [new ImageRun({
+                                            type: logoData.type,
+                                            data: logoData.data,
+                                            transformation: { 
+                                                width: emuToPixels(headerLogoWidthEMU), 
+                                                height: emuToPixels(headerLogoHeightEMU) 
+                                            }
+                                        })]
+                                    })] : [new Paragraph({ children: [] })]
+                                }),
+                                // 中欄 - 公司名稱
+                                new TableCell({
+                                    width: { size: 5360, type: WidthType.DXA },
+                                    borders: noBorders,
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    children: [new Paragraph({
+                                        alignment: AlignmentType.CENTER,
+                                        children: [new TextRun({ text: "尚緯消防工程行", bold: true, color: DARK_TEAL, size: 28, font: "微軟正黑體" })]
+                                    })]
+                                }),
+                                // 右欄 - 標語
+                                new TableCell({
+                                    width: { size: 2000, type: WidthType.DXA },
+                                    borders: noBorders,
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    children: [new Paragraph({
+                                        alignment: AlignmentType.CENTER,
+                                        children: [new TextRun({ text: "專業 • 品質 • 安全", color: RED, size: 18, font: "微軟正黑體" })]
+                                    })]
+                                })
+                            ]
+                        })
+                    ]
+                });
+                
+                const photoHeader = new Header({
+                    children: [
+                        headerTable,
+                        // 青綠色分隔線
+                        new Paragraph({
+                            border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: TEAL } },
+                            spacing: { after: 200 },
+                            children: []
+                        })
+                    ]
+                });
+                
+                // 建立頁尾（只用於照片頁）
+                const photoFooter = new Footer({
+                    children: [
+                        // 青綠色上邊框
+                        new Paragraph({
+                            border: { top: { style: BorderStyle.SINGLE, size: 6, color: TEAL } },
+                            children: []
+                        }),
+                        // 頁碼
+                        new Paragraph({
+                            alignment: AlignmentType.CENTER,
+                            spacing: { before: 100 },
+                            children: [
+                                new TextRun({ text: "第 ", color: GRAY, size: 18, font: "微軟正黑體" }),
+                                new TextRun({ children: [PageNumber.CURRENT], bold: true, color: TEAL, size: 18, font: "微軟正黑體" }),
+                                new TextRun({ text: " 頁，共 ", color: GRAY, size: 18, font: "微軟正黑體" }),
+                                new TextRun({ children: [PageNumber.TOTAL_PAGES], bold: true, color: TEAL, size: 18, font: "微軟正黑體" }),
+                                new TextRun({ text: " 頁", color: GRAY, size: 18, font: "微軟正黑體" })
+                            ]
+                        })
+                    ]
+                });
+                
+                // 建立文件（兩個 section：封面頁 + 照片頁）
+                const doc = new Document({
+                    sections: [
+                        // 第一個 section：封面頁（無頁首頁尾）
+                        {
+                            properties: {
+                                page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } }
+                            },
+                            children: coverChildren
+                        },
+                        // 第二個 section：照片頁（有頁首頁尾）
+                        {
+                            properties: {
+                                page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } }
+                            },
+                            headers: { default: photoHeader },
+                            footers: { default: photoFooter },
+                            children: photoPageChildren
+                        }
+                    ]
+                });
+                
+                const buffer = await Packer.toBlob(doc);
+                const fileName = `施工報告_${projectName.substring(0, 15).replace(/[\\/:*?"<>|]/g, '')}_${new Date().toISOString().slice(0, 10)}.docx`;
+                saveAs(buffer, fileName);
+                showSuccess();
+            } catch (err) {
+                console.error('產生報告錯誤:', err);
+                showError('❌ 產生報告時發生錯誤：' + err.message);
+            } finally {
+                loading.classList.remove('show');
+                generateBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
