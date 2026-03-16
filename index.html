@@ -3,1110 +3,1199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>施工報告產生器 (Word)</title>
+    <title>施工報告產生器 — 尚緯消防工程行</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Noto Sans TC', -apple-system, sans-serif;
-            background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #2b6cb0 100%);
-            min-height: 100vh;
-            padding: 20px;
+        :root {
+            --teal: #2AAFB3;
+            --teal-dark: #1A7A7D;
+            --teal-deeper: #145A5D;
+            --teal-light: #E8F8F8;
+            --teal-glow: rgba(42, 175, 179, 0.15);
+            --red: #E63B2E;
+            --red-light: #FFF0EF;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-700: #334155;
+            --slate-600: #475569;
+            --slate-500: #64748b;
+            --slate-400: #94a3b8;
+            --slate-300: #cbd5e1;
+            --slate-200: #e2e8f0;
+            --slate-100: #f1f5f9;
+            --slate-50: #f8fafc;
+            --white: #ffffff;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.04);
+            --shadow-lg: 0 12px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.05);
+            --shadow-xl: 0 24px 60px rgba(0,0,0,0.12), 0 8px 20px rgba(0,0,0,0.06);
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans TC', system-ui, -apple-system, sans-serif;
+            background: var(--slate-100);
+            min-height: 100vh;
+            color: var(--slate-700);
+            line-height: 1.6;
+        }
+
+        /* ===== Top Banner ===== */
+        .top-banner {
+            background: linear-gradient(135deg, var(--teal-deeper) 0%, var(--teal-dark) 40%, var(--teal) 100%);
+            padding: 0;
+            position: relative;
             overflow: hidden;
         }
-        .header {
-            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
-            color: #fff;
-            padding: 25px 30px;
+        .top-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 600px 300px at 10% 80%, rgba(255,255,255,0.06), transparent),
+                radial-gradient(ellipse 400px 400px at 90% 20%, rgba(255,255,255,0.04), transparent);
+            pointer-events: none;
+        }
+        .top-banner-inner {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 28px 32px 24px;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 18px;
+            position: relative;
         }
-        .header-icon { font-size: 36px; }
-        .header h1 { font-size: 22px; font-weight: 700; }
-        .header p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
-        .header .badge {
-            background: #48bb78;
-            color: #fff;
-            padding: 4px 10px;
-            border-radius: 12px;
+        .brand-icon {
+            width: 52px; height: 52px;
+            background: rgba(255,255,255,0.15);
+            border-radius: var(--radius);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.12);
+            flex-shrink: 0;
+        }
+        .brand-text h1 {
+            color: var(--white);
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+        .brand-text p {
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+            font-weight: 400;
+            margin-top: 2px;
+        }
+        .brand-badge {
+            background: rgba(255,255,255,0.18);
+            color: var(--white);
+            padding: 4px 12px;
+            border-radius: 20px;
             font-size: 11px;
             font-weight: 600;
-            margin-left: 10px;
+            letter-spacing: 0.04em;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-left: auto;
+            flex-shrink: 0;
+            white-space: nowrap;
         }
-        .content { padding: 25px 30px; }
-        .section {
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
+
+        /* ===== Main Container ===== */
+        .main-container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 24px 16px 48px;
         }
-        .section-header {
+
+        /* ===== Card / Section ===== */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--slate-200);
+            margin-bottom: 16px;
+            overflow: hidden;
+            transition: box-shadow var(--transition);
+        }
+        .card:hover { box-shadow: var(--shadow-md); }
+        .card-header {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 18px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #e2e8f0;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--slate-100);
         }
-        .section-num {
-            background: #3182ce;
-            color: #fff;
-            width: 26px;
-            height: 26px;
+        .card-step {
+            width: 28px; height: 28px;
+            background: var(--teal);
+            color: var(--white);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700;
+            flex-shrink: 0;
         }
-        .section-title { font-size: 16px; font-weight: 700; color: #2d3748; }
-        .form-row {
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--slate-800);
+        }
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--slate-400);
+            margin-left: auto;
+        }
+        .card-body { padding: 20px 22px; }
+
+        /* ===== Form Controls ===== */
+        .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
+            gap: 14px;
         }
-        .form-group { margin-bottom: 15px; }
+        .form-group { margin-bottom: 14px; }
         .form-group:last-child { margin-bottom: 0; }
-        .form-group label {
+        .form-group.full { grid-column: 1 / -1; }
+        label {
             display: block;
             font-size: 13px;
             font-weight: 600;
-            color: #4a5568;
-            margin-bottom: 6px;
+            color: var(--slate-600);
+            margin-bottom: 5px;
         }
-        .form-group input,
-        .form-group textarea {
+        label .required { color: var(--red); margin-left: 2px; }
+        input[type="text"], textarea {
             width: 100%;
-            padding: 11px 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
+            padding: 10px 14px;
+            border: 1.5px solid var(--slate-200);
+            border-radius: var(--radius-sm);
             font-size: 14px;
             font-family: inherit;
-            transition: all 0.2s;
+            color: var(--slate-800);
+            background: var(--white);
+            transition: all var(--transition);
         }
-        .form-group input:focus,
-        .form-group textarea:focus {
+        input[type="text"]:focus, textarea:focus {
             outline: none;
-            border-color: #3182ce;
-            box-shadow: 0 0 0 3px rgba(49,130,206,0.1);
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px var(--teal-glow);
         }
-        .form-group textarea { min-height: 80px; resize: vertical; }
-        .upload-zone {
-            border: 2px dashed #cbd5e0;
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: #fff;
-        }
-        .upload-zone:hover, .upload-zone.active {
-            border-color: #3182ce;
-            background: #ebf8ff;
-        }
-        .upload-icon { font-size: 40px; margin-bottom: 10px; }
-        .upload-text { color: #4a5568; font-size: 15px; font-weight: 500; }
-        .upload-hint { color: #a0aec0; font-size: 12px; margin-top: 6px; }
+        textarea { min-height: 90px; resize: vertical; line-height: 1.7; }
+        input::placeholder, textarea::placeholder { color: var(--slate-400); }
 
-        /* Logo 上傳區 */
-        .logo-section {
-            background: #f0f9ff;
-            border: 2px dashed #3182ce;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            text-align: center;
+        /* ===== Logo Section ===== */
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 4px 0;
         }
-        .logo-preview {
-            max-width: 150px;
-            max-height: 150px;
-            margin: 10px auto;
-            display: block;
+        .logo-thumb {
+            width: 72px; height: 72px;
+            border-radius: var(--radius);
+            border: 2px dashed var(--slate-300);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: var(--slate-50);
+            transition: border-color var(--transition);
+            cursor: pointer;
         }
-        .logo-label {
-            font-size: 14px;
-            color: #3182ce;
+        .logo-thumb:hover { border-color: var(--teal); }
+        .logo-thumb.has-logo {
+            border-style: solid;
+            border-color: var(--teal);
+        }
+        .logo-thumb img {
+            width: 100%; height: 100%;
+            object-fit: contain;
+            padding: 4px;
+        }
+        .logo-thumb .placeholder-icon {
+            font-size: 28px;
+            color: var(--slate-300);
+        }
+        .logo-info { flex: 1; }
+        .logo-info .title { font-size: 14px; font-weight: 600; color: var(--slate-700); }
+        .logo-info .desc { font-size: 12px; color: var(--slate-400); margin-top: 2px; }
+        .btn-sm {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 14px;
+            font-size: 12px;
             font-weight: 600;
-            margin-bottom: 10px;
-        }
-        .btn-upload-logo {
-            background: #3182ce;
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
+            border: 1.5px solid var(--slate-200);
+            background: var(--white);
             border-radius: 6px;
             cursor: pointer;
-            font-size: 13px;
+            color: var(--slate-600);
+            font-family: inherit;
+            transition: all var(--transition);
+            margin-top: 8px;
         }
-        .btn-upload-logo:hover { background: #2c5282; }
+        .btn-sm:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-light); }
+        .btn-sm.danger:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
 
+        /* ===== Upload Zone ===== */
+        .upload-zone {
+            border: 2px dashed var(--slate-300);
+            border-radius: var(--radius);
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+            background: var(--slate-50);
+            position: relative;
+        }
+        .upload-zone:hover, .upload-zone.active {
+            border-color: var(--teal);
+            background: var(--teal-light);
+        }
+        .upload-zone .icon { font-size: 36px; margin-bottom: 8px; opacity: 0.8; }
+        .upload-zone .text { font-size: 14px; font-weight: 600; color: var(--slate-600); }
+        .upload-zone .hint { font-size: 12px; color: var(--slate-400); margin-top: 4px; }
+
+        /* ===== Photo Status Bar ===== */
+        .photo-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0 8px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .photo-count-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--teal-light);
+            color: var(--teal-dark);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .sort-hint {
+            font-size: 11px;
+            color: var(--slate-400);
+        }
+
+        /* ===== Photo Grid ===== */
         .photo-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 12px;
+            padding-bottom: 4px;
         }
         .photo-card {
-            background: #fff;
-            border-radius: 10px;
+            background: var(--white);
+            border-radius: var(--radius);
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            transition: all 0.2s;
+            border: 1.5px solid var(--slate-200);
+            transition: all var(--transition);
             position: relative;
             cursor: grab;
             user-select: none;
         }
         .photo-card:hover {
-            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-            transform: translateY(-2px);
+            border-color: var(--teal);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
         }
         .photo-card.dragging {
-            opacity: 0.5;
-            transform: scale(0.95);
+            opacity: 0.4;
+            transform: scale(0.96);
             cursor: grabbing;
         }
         .photo-card.drag-over {
-            border: 3px dashed #3182ce;
-            background: #ebf8ff;
+            border-color: var(--teal);
+            border-style: dashed;
+            background: var(--teal-light);
         }
-        .photo-card img {
+        .photo-card .thumb {
             width: 100%;
-            height: 130px;
+            height: 140px;
             object-fit: cover;
+            display: block;
             pointer-events: none;
+            background: var(--slate-100);
         }
-        .photo-card-body { padding: 12px; }
-        .photo-card-num {
+        .photo-card .num {
             position: absolute;
-            top: 8px;
-            left: 8px;
-            background: rgba(0,0,0,0.7);
-            color: #fff;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 700;
+            top: 8px; left: 8px;
+            background: var(--slate-900);
+            color: var(--white);
+            min-width: 22px; height: 22px;
+            border-radius: 11px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700;
+            padding: 0 6px;
             pointer-events: none;
+            opacity: 0.85;
         }
-        .photo-card-drag {
+        .photo-card .actions {
             position: absolute;
-            top: 8px;
-            right: 36px;
-            background: rgba(49, 130, 206, 0.9);
-            color: #fff;
-            border: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            cursor: grab;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            top: 8px; right: 8px;
+            display: flex; gap: 4px;
             opacity: 0;
-            transition: opacity 0.2s;
+            transition: opacity var(--transition);
         }
-        .photo-card:hover .photo-card-drag { opacity: 1; }
-        .photo-card-delete {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: #e53e3e;
-            color: #fff;
+        .photo-card:hover .actions { opacity: 1; }
+        .photo-card .actions button {
+            width: 24px; height: 24px;
+            border-radius: 6px;
             border: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px;
             cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.2s;
+            transition: all var(--transition);
         }
-        .photo-card:hover .photo-card-delete { opacity: 1; }
-        .photo-card input {
+        .btn-move {
+            background: rgba(0,0,0,0.55);
+            color: var(--white);
+            backdrop-filter: blur(4px);
+        }
+        .btn-move:hover { background: var(--teal); }
+        .btn-move:disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn-del {
+            background: rgba(230,59,46,0.85);
+            color: var(--white);
+        }
+        .btn-del:hover { background: var(--red); }
+        .photo-card .caption-input {
+            display: block;
             width: 100%;
             padding: 8px 10px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
+            border: none;
+            border-top: 1px solid var(--slate-100);
             font-size: 12px;
             font-family: inherit;
+            color: var(--slate-700);
+            background: var(--slate-50);
+            transition: background var(--transition), border-color var(--transition);
         }
-        .photo-card input:focus {
+        .photo-card .caption-input:focus {
             outline: none;
-            border-color: #3182ce;
+            background: var(--teal-light);
+            border-top-color: var(--teal);
         }
-        .photo-card input.has-value {
-            border-color: #48bb78;
+        .photo-card .caption-input.filled {
+            border-top-color: #48bb78;
             background: #f0fff4;
         }
-        .photo-card-arrows {
-            position: absolute;
-            bottom: 52px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 4px;
-            opacity: 0;
-            transition: opacity 0.2s;
+
+        .empty-state {
+            text-align: center;
+            padding: 36px 20px;
+            color: var(--slate-400);
         }
-        .photo-card:hover .photo-card-arrows { opacity: 1; }
-        .arrow-btn {
-            background: rgba(0,0,0,0.7);
-            color: #fff;
+        .empty-state .icon { font-size: 40px; margin-bottom: 8px; opacity: 0.6; }
+        .empty-state .text { font-size: 13px; }
+
+        /* ===== Batch Caption ===== */
+        .batch-caption-area {
+            border-top: 1px solid var(--slate-100);
+            padding: 14px 22px;
+            display: none;
+        }
+        .batch-caption-area.show { display: block; }
+        .batch-caption-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .batch-caption-row input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1.5px solid var(--slate-200);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-family: inherit;
+        }
+        .batch-caption-row input:focus {
+            outline: none;
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px var(--teal-glow);
+        }
+        .batch-caption-row button {
+            padding: 8px 16px;
+            background: var(--teal);
+            color: var(--white);
             border: none;
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
-            font-size: 14px;
+            font-family: inherit;
+            white-space: nowrap;
+            transition: background var(--transition);
+        }
+        .batch-caption-row button:hover { background: var(--teal-dark); }
+        .batch-hint { font-size: 11px; color: var(--slate-400); margin-top: 6px; }
+
+        /* ===== Image Compression Toggle ===== */
+        .option-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 22px;
+            border-top: 1px solid var(--slate-100);
+            font-size: 13px;
+            color: var(--slate-600);
+        }
+        .toggle {
+            position: relative;
+            width: 36px; height: 20px;
+            flex-shrink: 0;
+        }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle .slider {
+            position: absolute;
+            inset: 0;
+            background: var(--slate-300);
+            border-radius: 10px;
+            transition: background var(--transition);
+            cursor: pointer;
+        }
+        .toggle .slider::before {
+            content: '';
+            position: absolute;
+            width: 16px; height: 16px;
+            left: 2px; top: 2px;
+            background: var(--white);
+            border-radius: 50%;
+            transition: transform var(--transition);
+        }
+        .toggle input:checked + .slider { background: var(--teal); }
+        .toggle input:checked + .slider::before { transform: translateX(16px); }
+
+        /* ===== Generate Button ===== */
+        .generate-section { padding: 0 0 0; }
+        .btn-generate {
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
-        }
-        .arrow-btn:hover {
-            background: #3182ce;
-            transform: scale(1.1);
-        }
-        .arrow-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            transform: none;
-        }
-        .btn-generate {
+            gap: 10px;
             width: 100%;
             padding: 16px;
-            background: linear-gradient(135deg, #2b6cb0 0%, #2c5282 100%);
-            color: #fff;
+            background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 100%);
+            color: var(--white);
             border: none;
-            border-radius: 10px;
+            border-radius: var(--radius);
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
             font-family: inherit;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.2s;
+            transition: all var(--transition);
+            box-shadow: 0 4px 16px rgba(42,175,179,0.25);
         }
         .btn-generate:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(44,82,130,0.35);
+            box-shadow: 0 8px 28px rgba(42,175,179,0.35);
         }
+        .btn-generate:active { transform: translateY(0); }
         .btn-generate:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
-        .status-bar {
-            display: flex;
+
+        /* ===== Loading ===== */
+        .loading-overlay {
+            display: none;
             align-items: center;
-            justify-content: space-between;
-            margin-top: 20px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
+            justify-content: center;
+            flex-direction: column;
+            gap: 14px;
+            padding: 32px;
         }
-        .photo-count {
-            background: #ebf8ff;
-            color: #2b6cb0;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
+        .loading-overlay.show { display: flex; }
+        .spinner {
+            width: 32px; height: 32px;
+            border: 3px solid var(--slate-200);
+            border-top-color: var(--teal);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
         }
-        .sort-hint { 
-            font-size: 12px; 
-            color: #718096;
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { font-size: 13px; color: var(--slate-500); }
+
+        /* ===== Toast Messages ===== */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 14px 20px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 500;
             display: flex;
             align-items: center;
             gap: 8px;
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-lg);
+            max-width: 380px;
         }
-        .sort-hint .drag-icon {
-            background: #e2e8f0;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-        }
-        .loading {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            padding: 30px;
-        }
-        .loading.show { display: flex; }
-        .spinner {
-            width: 36px;
-            height: 36px;
-            border: 3px solid #e2e8f0;
-            border-top-color: #3182ce;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        .loading-text { margin-top: 12px; color: #4a5568; font-size: 14px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .empty-photos {
+        .toast.show { transform: translateX(0); }
+        .toast.success { background: #065f46; color: var(--white); }
+        .toast.error { background: #991b1b; color: var(--white); }
+
+        /* ===== Footer ===== */
+        .footer {
             text-align: center;
-            padding: 40px;
-            color: #a0aec0;
+            padding: 24px;
+            font-size: 12px;
+            color: var(--slate-400);
         }
-        .empty-photos-icon { font-size: 48px; margin-bottom: 10px; }
-        .success-msg {
-            background: #c6f6d5;
-            color: #276749;
-            padding: 15px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: none;
-            align-items: center;
-            gap: 10px;
-        }
-        .success-msg.show { display: flex; }
-        .error-msg {
-            background: #fed7d7;
-            color: #c53030;
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 14px;
-            display: none;
-        }
-        .error-msg.show { display: block; }
-        
-        @media (max-width: 600px) {
-            .form-row { grid-template-columns: 1fr; }
-            .photo-grid { grid-template-columns: 1fr 1fr; }
-            body { padding: 10px; }
-            .content { padding: 15px; }
-            .photo-card-arrows { opacity: 1; }
-            .photo-card-delete { opacity: 1; }
-            .photo-card-drag { display: none; }
+        .footer strong { color: var(--teal-dark); font-weight: 600; }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 640px) {
+            .top-banner-inner { padding: 20px 18px; gap: 12px; }
+            .brand-text h1 { font-size: 17px; }
+            .brand-badge { display: none; }
+            .main-container { padding: 12px 8px 32px; }
+            .card-body { padding: 16px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .photo-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .photo-card .thumb { height: 110px; }
+            .photo-card .actions { opacity: 1; }
+            .logo-area { flex-wrap: wrap; }
+            .toast { left: 12px; right: 12px; max-width: none; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="header-icon">📋</div>
-            <div>
-                <h1>施工報告產生器 <span class="badge">Word 版</span></h1>
-                <p>封面頁 + 照片頁（每頁4張照片）・依照範本格式產生</p>
+    <!-- ===== Banner ===== -->
+    <header class="top-banner">
+        <div class="top-banner-inner">
+            <div class="brand-icon">🔧</div>
+            <div class="brand-text">
+                <h1>施工報告產生器</h1>
+                <p>封面 + 照片頁 ・ 自動排版下載 Word 檔</p>
             </div>
+            <span class="brand-badge">DOCX</span>
         </div>
-        <div class="content">
-            <div class="success-msg" id="successMsg">
-                <span>✅</span>
-                <span>報告已成功產生並下載！</span>
-            </div>
-            <div class="error-msg" id="errorMsg"></div>
+    </header>
 
-            <!-- Logo 上傳區 -->
-            <div class="section">
-                <div class="section-header">
-                    <span class="section-num">0</span>
-                    <span class="section-title">公司 Logo（選填）</span>
-                </div>
-                <div class="logo-section">
-                    <div class="logo-label">📷 上傳公司 Logo（PNG 格式建議）</div>
-                    <img id="logoPreview" class="logo-preview" style="display:none;">
-                    <div id="logoPlaceholder">尚未上傳 Logo，將使用預設樣式</div>
-                    <button class="btn-upload-logo" onclick="document.getElementById('logoInput').click()">選擇 Logo</button>
+    <!-- ===== Content ===== -->
+    <main class="main-container">
+
+        <!-- Toast -->
+        <div class="toast" id="toast"></div>
+
+        <!-- Section 0: Logo -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-step">0</div>
+                <span class="card-title">公司 Logo</span>
+                <span class="card-subtitle">選填</span>
+            </div>
+            <div class="card-body">
+                <div class="logo-area">
+                    <div class="logo-thumb" id="logoThumb" onclick="document.getElementById('logoInput').click()">
+                        <img id="logoPreview" style="display:none">
+                        <span class="placeholder-icon" id="logoPlaceholder">＋</span>
+                    </div>
+                    <div class="logo-info">
+                        <div class="title" id="logoTitle">尚未上傳 Logo</div>
+                        <div class="desc">建議使用 PNG 透明背景，將顯示於封面及頁首</div>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                            <button class="btn-sm" onclick="document.getElementById('logoInput').click()">📷 選擇 Logo</button>
+                            <button class="btn-sm danger" id="logoRemoveBtn" style="display:none" onclick="removeLogo()">✕ 移除</button>
+                        </div>
+                    </div>
                     <input type="file" id="logoInput" accept="image/*" hidden>
                 </div>
             </div>
+        </div>
 
-            <div class="section">
-                <div class="section-header">
-                    <span class="section-num">1</span>
-                    <span class="section-title">工程資訊</span>
-                </div>
-                <div class="form-group">
-                    <label>工程名稱 *</label>
-                    <input type="text" id="projectName" placeholder="例：昌益國寶社區-消防灑水改善工程">
-                </div>
-                <div class="form-row">
+        <!-- Section 1: Project Info -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-step">1</div>
+                <span class="card-title">工程資訊</span>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label>工程名稱 <span class="required">*</span></label>
+                        <input type="text" id="projectName" placeholder="例：昌益國寶社區 — 消防灑水改善工程">
+                    </div>
                     <div class="form-group">
                         <label>報告日期</label>
                         <input type="text" id="reportDate" placeholder="例：114年01月15日">
                     </div>
                     <div class="form-group">
                         <label>施工日期</label>
-                        <input type="text" id="workDate" placeholder="例：2025/01/01~01/31">
+                        <input type="text" id="workDate" placeholder="例：2025/01/01 ~ 01/31">
+                    </div>
+                    <div class="form-group full">
+                        <label>施工說明</label>
+                        <textarea id="description" placeholder="請輸入施工說明內容..."></textarea>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>施工說明</label>
-                    <textarea id="description" placeholder="請輸入施工說明..."></textarea>
-                </div>
             </div>
-            <div class="section">
-                <div class="section-header">
-                    <span class="section-num">2</span>
-                    <span class="section-title">施工照片</span>
-                </div>
+        </div>
+
+        <!-- Section 2: Photos -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-step">2</div>
+                <span class="card-title">施工照片</span>
+                <span class="card-subtitle" id="photoCountLabel"></span>
+            </div>
+            <div class="card-body">
                 <div class="upload-zone" id="uploadZone">
-                    <div class="upload-icon">📷</div>
-                    <div class="upload-text">點擊或拖曳照片上傳</div>
-                    <div class="upload-hint">支援 JPG、PNG，可多選</div>
+                    <div class="icon">📷</div>
+                    <div class="text">點擊或拖曳照片上傳</div>
+                    <div class="hint">支援 JPG / PNG，可多選批次上傳</div>
                     <input type="file" id="fileInput" multiple accept="image/*" hidden>
                 </div>
                 <div id="photoContainer">
-                    <div class="empty-photos" id="emptyPhotos">
-                        <div class="empty-photos-icon">🖼️</div>
-                        <div>尚未上傳照片</div>
+                    <div class="empty-state" id="emptyPhotos">
+                        <div class="icon">🖼️</div>
+                        <div class="text">尚未上傳照片</div>
                     </div>
                 </div>
             </div>
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <div class="loading-text">正在產生 Word 報告...</div>
+            <!-- Batch caption -->
+            <div class="batch-caption-area" id="batchCaptionArea">
+                <div class="batch-caption-row">
+                    <input type="text" id="batchCaptionInput" placeholder="輸入統一說明文字...">
+                    <button onclick="applyBatchCaption()">套用全部</button>
+                </div>
+                <div class="batch-hint">將說明文字套用至所有尚未填寫的照片（已有說明的不會被覆蓋）</div>
             </div>
-            <button class="btn-generate" id="generateBtn">
+            <!-- Compression toggle -->
+            <div class="option-row" id="optionRow" style="display:none;">
+                <label class="toggle">
+                    <input type="checkbox" id="compressToggle" checked>
+                    <span class="slider"></span>
+                </label>
+                <span>壓縮照片（加快產生速度，縮小檔案大小）</span>
+            </div>
+        </div>
+
+        <!-- Generate -->
+        <div class="generate-section">
+            <div class="loading-overlay" id="loading">
+                <div class="spinner"></div>
+                <div class="loading-text" id="loadingText">正在產生 Word 報告...</div>
+            </div>
+            <button class="btn-generate" id="generateBtn" onclick="generateReport()">
                 <span>📄</span> 產生 Word 報告
             </button>
         </div>
-    </div>
+
+        <div class="footer">
+            <strong>尚緯消防工程行</strong> ・ 專業 • 品質 • 安全
+        </div>
+    </main>
+
     <script>
-        const { Document, Packer, Paragraph, TextRun, ImageRun, Table, TableRow, TableCell, 
-                Header, Footer, AlignmentType, PageBreak, WidthType, BorderStyle, 
-                VerticalAlign, ShadingType, PageNumber, HeadingLevel } = docx;
-        
-        let photos = [];
-        let logoData = null;
-        let draggedIndex = null;
-        
-        const uploadZone = document.getElementById('uploadZone');
-        const fileInput = document.getElementById('fileInput');
-        const photoContainer = document.getElementById('photoContainer');
-        const emptyPhotos = document.getElementById('emptyPhotos');
-        const generateBtn = document.getElementById('generateBtn');
-        const loading = document.getElementById('loading');
-        const successMsg = document.getElementById('successMsg');
-        const errorMsg = document.getElementById('errorMsg');
-        const logoInput = document.getElementById('logoInput');
-        const logoPreview = document.getElementById('logoPreview');
-        const logoPlaceholder = document.getElementById('logoPlaceholder');
-        
-        // Logo 上傳處理
-        logoInput.addEventListener('change', e => {
-            const file = e.target.files[0];
-            if (file && file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = evt => {
-                    logoPreview.src = evt.target.result;
-                    logoPreview.style.display = 'block';
-                    logoPlaceholder.style.display = 'none';
-                    
-                    const bufferReader = new FileReader();
-                    bufferReader.onload = bufEvt => {
-                        logoData = {
-                            data: bufEvt.target.result,
-                            type: file.type.includes('png') ? 'png' : 'jpg'
-                        };
-                    };
-                    bufferReader.readAsArrayBuffer(file);
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        
-        uploadZone.addEventListener('click', () => fileInput.click());
-        uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('active'); });
-        uploadZone.addEventListener('dragleave', () => { uploadZone.classList.remove('active'); });
-        uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('active'); handleFiles(e.dataTransfer.files); });
-        fileInput.addEventListener('change', e => { handleFiles(e.target.files); fileInput.value = ''; });
-        generateBtn.addEventListener('click', generateReport);
-        
-        function getImageDimensions(dataUrl) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => resolve({ width: img.width, height: img.height });
-                img.onerror = () => resolve({ width: 800, height: 600 });
-                img.src = dataUrl;
-            });
-        }
-        
-        function handleFiles(files) {
-            hideMessages();
-            Array.from(files).forEach(file => {
-                if (!file.type.startsWith('image/')) return;
-                const reader = new FileReader();
-                reader.onload = async e => {
-                    const id = 'photo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                    const dimensions = await getImageDimensions(e.target.result);
-                    const arrayBufferReader = new FileReader();
-                    arrayBufferReader.onload = evt => {
-                        photos.push({ id, name: file.name, data: e.target.result, buffer: evt.target.result, type: file.type.includes('png') ? 'png' : 'jpg', caption: '', width: dimensions.width, height: dimensions.height });
-                        renderPhotos();
-                    };
-                    arrayBufferReader.readAsArrayBuffer(file);
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-        
-        function renderPhotos() {
-            if (photos.length === 0) { 
-                photoContainer.innerHTML = ''; 
-                photoContainer.appendChild(emptyPhotos); 
-                emptyPhotos.style.display = 'block'; 
-                return; 
-            }
-            emptyPhotos.style.display = 'none';
-            let html = `<div class="status-bar">
-                <span class="photo-count">共 ${photos.length} 張照片</span>
-                <span class="sort-hint">
-                    <span class="drag-icon">🖐️ 拖曳</span> 或 
-                    <span class="drag-icon">◀ ▶ 按鈕</span> 調整順序
-                </span>
-            </div><div class="photo-grid">`;
-            
-            photos.forEach((photo, index) => {
-                const hasCaption = photo.caption && photo.caption.trim() !== '';
-                const isFirst = index === 0;
-                const isLast = index === photos.length - 1;
-                
-                html += `<div class="photo-card" data-id="${photo.id}" data-index="${index}" draggable="true">
-                    <span class="photo-card-num">${index + 1}</span>
-                    <span class="photo-card-drag" title="拖曳排序">⋮⋮</span>
-                    <button class="photo-card-delete" onclick="deletePhoto('${photo.id}')" type="button">✕</button>
-                    <img src="${photo.data}" alt="${photo.name}">
-                    <div class="photo-card-arrows">
-                        <button class="arrow-btn" onclick="movePhoto(${index}, -1)" ${isFirst ? 'disabled' : ''} title="向前移動">◀</button>
-                        <button class="arrow-btn" onclick="movePhoto(${index}, 1)" ${isLast ? 'disabled' : ''} title="向後移動">▶</button>
-                    </div>
-                    <div class="photo-card-body">
-                        <input type="text" id="caption_${photo.id}" class="${hasCaption ? 'has-value' : ''}" 
-                            placeholder="請輸入照片說明..." value="${photo.caption}" 
-                            oninput="updateCaption('${photo.id}', this.value, this)">
-                    </div>
-                </div>`;
-            });
-            html += '</div>';
-            photoContainer.innerHTML = html;
-            initDragAndDrop();
-        }
-        
-        function initDragAndDrop() {
-            const cards = document.querySelectorAll('.photo-card');
-            cards.forEach(card => {
-                card.addEventListener('dragstart', handleDragStart);
-                card.addEventListener('dragend', handleDragEnd);
-                card.addEventListener('dragover', handleDragOver);
-                card.addEventListener('dragenter', handleDragEnter);
-                card.addEventListener('dragleave', handleDragLeave);
-                card.addEventListener('drop', handleDrop);
-            });
-        }
-        
-        function handleDragStart(e) {
-            draggedIndex = parseInt(this.dataset.index);
-            this.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', draggedIndex);
-            setTimeout(() => { this.style.opacity = '0.4'; }, 0);
-        }
-        
-        function handleDragEnd(e) {
-            this.classList.remove('dragging');
-            this.style.opacity = '1';
-            document.querySelectorAll('.photo-card').forEach(card => { card.classList.remove('drag-over'); });
-            draggedIndex = null;
-        }
-        
-        function handleDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
-        function handleDragEnter(e) { e.preventDefault(); if (parseInt(this.dataset.index) !== draggedIndex) this.classList.add('drag-over'); }
-        function handleDragLeave(e) { this.classList.remove('drag-over'); }
-        
-        function handleDrop(e) {
-            e.preventDefault();
-            this.classList.remove('drag-over');
-            const targetIndex = parseInt(this.dataset.index);
-            if (draggedIndex !== null && draggedIndex !== targetIndex) {
-                syncAllCaptions();
-                const [movedPhoto] = photos.splice(draggedIndex, 1);
-                photos.splice(targetIndex, 0, movedPhoto);
-                renderPhotos();
-            }
-        }
-        
-        function movePhoto(index, direction) {
-            const newIndex = index + direction;
-            if (newIndex < 0 || newIndex >= photos.length) return;
-            syncAllCaptions();
-            [photos[index], photos[newIndex]] = [photos[newIndex], photos[index]];
-            renderPhotos();
-        }
-        
-        function updateCaption(id, value, inputElement) { 
-            const photo = photos.find(p => p.id === id); 
-            if (photo) { 
-                photo.caption = value; 
-                if (inputElement) inputElement.classList.toggle('has-value', value && value.trim() !== ''); 
-            } 
-        }
-        
-        function deletePhoto(id) { syncAllCaptions(); photos = photos.filter(p => p.id !== id); renderPhotos(); }
-        function hideMessages() { successMsg.classList.remove('show'); errorMsg.classList.remove('show'); }
-        function showError(msg) { errorMsg.textContent = msg; errorMsg.classList.add('show'); errorMsg.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-        function showSuccess() { successMsg.classList.add('show'); }
-        function syncAllCaptions() { photos.forEach(photo => { const input = document.getElementById('caption_' + photo.id); if (input) photo.caption = input.value; }); }
+    const { Document, Packer, Paragraph, TextRun, ImageRun, Table, TableRow, TableCell,
+            Header, Footer, AlignmentType, PageBreak, WidthType, BorderStyle,
+            VerticalAlign, ShadingType, PageNumber } = docx;
 
-        // 計算縮放尺寸以適應最大寬高（以 EMU 為單位）
-        function calculateScaledSizeEMU(originalWidth, originalHeight, maxWidthEMU, maxHeightEMU) {
-            const widthRatio = maxWidthEMU / originalWidth;
-            const heightRatio = maxHeightEMU / originalHeight;
-            const ratio = Math.min(widthRatio, heightRatio);
-            return { 
-                width: Math.round(originalWidth * ratio), 
-                height: Math.round(originalHeight * ratio) 
+    // ===== State =====
+    let photos = [];
+    let logoData = null;
+    let draggedIndex = null;
+
+    // ===== DOM Refs =====
+    const $ = id => document.getElementById(id);
+    const uploadZone = $('uploadZone');
+    const fileInput = $('fileInput');
+    const photoContainer = $('photoContainer');
+    const emptyPhotos = $('emptyPhotos');
+    const generateBtn = $('generateBtn');
+    const loading = $('loading');
+    const logoInput = $('logoInput');
+    const toastEl = $('toast');
+
+    // ===== Toast =====
+    let toastTimer;
+    function showToast(msg, type = 'success') {
+        clearTimeout(toastTimer);
+        toastEl.textContent = msg;
+        toastEl.className = `toast ${type}`;
+        requestAnimationFrame(() => toastEl.classList.add('show'));
+        toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3500);
+    }
+
+    // ===== Logo =====
+    logoInput.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = evt => {
+            $('logoPreview').src = evt.target.result;
+            $('logoPreview').style.display = 'block';
+            $('logoPlaceholder').style.display = 'none';
+            $('logoThumb').classList.add('has-logo');
+            $('logoTitle').textContent = file.name;
+            $('logoRemoveBtn').style.display = '';
+            const bufReader = new FileReader();
+            bufReader.onload = b => {
+                logoData = { data: b.target.result, type: file.type.includes('png') ? 'png' : 'jpg' };
             };
-        }
-        
-        // 將 EMU 轉換為像素（docx-js 使用像素）
-        // 1 inch = 914400 EMU = 96 px (螢幕 DPI)
-        function emuToPixels(emu) {
-            return Math.round(emu / 914400 * 96);
-        }
-        
-        async function generateReport() {
-            hideMessages();
-            syncAllCaptions();
-            const projectName = document.getElementById('projectName').value.trim();
-            const reportDate = document.getElementById('reportDate').value.trim() || new Date().toLocaleDateString('zh-TW');
-            const description = document.getElementById('description').value.trim();
-            
-            if (!projectName) { showError('❌ 請填寫工程名稱'); document.getElementById('projectName').focus(); return; }
-            if (photos.length === 0) { showError('❌ 請上傳至少一張照片'); return; }
-            const missingIndex = photos.findIndex(p => !p.caption || p.caption.trim() === '');
-            if (missingIndex >= 0) { showError(`❌ 請為第 ${missingIndex + 1} 張照片填寫說明`); const input = document.getElementById('caption_' + photos[missingIndex].id); if (input) input.focus(); return; }
-            
-            loading.classList.add('show');
-            generateBtn.disabled = true;
-            
-            try {
-                await new Promise(resolve => setTimeout(resolve, 100));
-                
-                // 顏色定義
-                const TEAL = "2AAFB3";
-                const DARK_TEAL = "1A7A7D";
-                const RED = "E63B2E";
-                const GRAY = "666666";
-                const LIGHT_GRAY = "CCCCCC";
-                const LIGHT_TEAL_BG = "F0FAFA";
-                
-                // 邊框樣式
-                const thinBorder = { style: BorderStyle.SINGLE, size: 1, color: LIGHT_GRAY };
-                const noBorder = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
-                const cellBorders = { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder };
-                const noBorders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
-                
-                // 照片尺寸（基於範本）- EMU 單位
-                // 封面 Logo: 1143000 × 1333500 EMU
-                // 照片頁照片: 2095500 × 2790825 EMU
-                const coverLogoWidthEMU = 1143000;
-                const coverLogoHeightEMU = 1333500;
-                const photoWidthEMU = 2095500;
-                const photoHeightEMU = 2790825;
-                const headerLogoWidthEMU = 500062;
-                const headerLogoHeightEMU = 583406;
+            bufReader.readAsArrayBuffer(file);
+        };
+        reader.readAsDataURL(file);
+    });
 
-                // 建立封面頁內容
-                const coverChildren = [];
-                
-                // 封面 - Logo（如果有上傳）
-                if (logoData) {
-                    const logoSize = calculateScaledSizeEMU(coverLogoWidthEMU, coverLogoHeightEMU, coverLogoWidthEMU, coverLogoHeightEMU);
-                    coverChildren.push(new Paragraph({
-                        alignment: AlignmentType.CENTER,
-                        spacing: { before: 400, after: 100 },
-                        children: [new ImageRun({
-                            type: logoData.type,
-                            data: logoData.data,
-                            transformation: { width: emuToPixels(logoSize.width), height: emuToPixels(logoSize.height) }
-                        })]
-                    }));
-                } else {
-                    // 沒有 Logo 時顯示公司名稱
-                    coverChildren.push(new Paragraph({
-                        alignment: AlignmentType.CENTER,
-                        spacing: { before: 600, after: 200 },
-                        children: [new TextRun({ text: "尚緯消防工程行", bold: true, size: 56, color: DARK_TEAL, font: "微軟正黑體" })]
-                    }));
-                }
-                
-                // 封面 - 標題「施 工 報 告 書」
-                coverChildren.push(new Paragraph({
-                    alignment: AlignmentType.CENTER,
-                    spacing: { before: 200, after: 100 },
-                    children: [new TextRun({ text: "施 工 報 告 書", bold: true, size: 72, color: TEAL, font: "微軟正黑體" })]
-                }));
-                
-                // 青綠色分隔線（使用特殊字符）
-                coverChildren.push(new Paragraph({
-                    alignment: AlignmentType.CENTER,
-                    spacing: { after: 400 },
-                    children: [new TextRun({ text: "━━━━━━━━━━━━━━━━━━━━", color: TEAL, size: 20 })]
-                }));
-                
-                // 工程資訊表格（2欄）- 置中
-                const infoTable = new Table({
-                    alignment: AlignmentType.CENTER,
-                    columnWidths: [2340, 7020],
-                    rows: [
-                        // 工程名稱列
-                        new TableRow({
-                            children: [
-                                new TableCell({
-                                    width: { size: 2340, type: WidthType.DXA },
-                                    borders: cellBorders,
-                                    shading: { fill: TEAL, type: ShadingType.CLEAR },
-                                    verticalAlign: VerticalAlign.CENTER,
-                                    children: [new Paragraph({
-                                        alignment: AlignmentType.CENTER,
-                                        spacing: { before: 120, after: 120 },
-                                        children: [new TextRun({ text: "工程名稱", bold: true, color: "FFFFFF", size: 24, font: "微軟正黑體" })]
-                                    })]
-                                }),
-                                new TableCell({
-                                    width: { size: 7020, type: WidthType.DXA },
-                                    borders: cellBorders,
-                                    verticalAlign: VerticalAlign.CENTER,
-                                    children: [new Paragraph({
-                                        alignment: AlignmentType.CENTER,
-                                        spacing: { before: 120, after: 120 },
-                                        children: [new TextRun({ text: projectName, size: 24, font: "微軟正黑體" })]
-                                    })]
-                                })
-                            ]
-                        }),
-                        // 報告日期列
-                        new TableRow({
-                            children: [
-                                new TableCell({
-                                    width: { size: 2340, type: WidthType.DXA },
-                                    borders: cellBorders,
-                                    shading: { fill: TEAL, type: ShadingType.CLEAR },
-                                    verticalAlign: VerticalAlign.CENTER,
-                                    children: [new Paragraph({
-                                        alignment: AlignmentType.CENTER,
-                                        spacing: { before: 120, after: 120 },
-                                        children: [new TextRun({ text: "報告日期", bold: true, color: "FFFFFF", size: 24, font: "微軟正黑體" })]
-                                    })]
-                                }),
-                                new TableCell({
-                                    width: { size: 7020, type: WidthType.DXA },
-                                    borders: cellBorders,
-                                    verticalAlign: VerticalAlign.CENTER,
-                                    children: [new Paragraph({
-                                        alignment: AlignmentType.CENTER,
-                                        spacing: { before: 120, after: 120 },
-                                        children: [new TextRun({ text: reportDate, size: 24, font: "微軟正黑體" })]
-                                    })]
-                                })
-                            ]
-                        })
-                    ]
-                });
-                coverChildren.push(infoTable);
-                
-                // 空行
-                coverChildren.push(new Paragraph({ spacing: { before: 400, after: 200 }, children: [] }));
-                
-                // 「一、施工說明」標題
-                coverChildren.push(new Paragraph({
-                    alignment: AlignmentType.CENTER,
-                    spacing: { before: 200, after: 200 },
-                    children: [new TextRun({ text: "一、施工說明", bold: true, size: 28, color: TEAL, font: "微軟正黑體" })]
-                }));
-                
-                // 施工說明內容框（單欄表格模擬）- 置中
-                const descTable = new Table({
-                    alignment: AlignmentType.CENTER,
-                    columnWidths: [9360],
-                    rows: [
-                        new TableRow({
-                            height: { value: 4762, rule: "atLeast" },
-                            children: [
-                                new TableCell({
-                                    width: { size: 9360, type: WidthType.DXA },
-                                    borders: cellBorders,
-                                    children: [new Paragraph({
-                                        spacing: { before: 200, after: 200 },
-                                        indent: { left: 200 },
-                                        children: [new TextRun({ text: description || "（請填入施工說明內容）", size: 22, font: "微軟正黑體" })]
-                                    })]
-                                })
-                            ]
-                        })
-                    ]
-                });
-                coverChildren.push(descTable);
-                
-                // 空行
-                coverChildren.push(new Paragraph({ spacing: { before: 400, after: 200 }, children: [] }));
-                
-                // 「二、施工照片(如下頁)」
-                coverChildren.push(new Paragraph({
-                    alignment: AlignmentType.CENTER,
-                    spacing: { before: 200 },
-                    children: [new TextRun({ text: "二、施工照片(如下頁)", bold: true, size: 28, color: TEAL, font: "微軟正黑體" })]
-                }));
+    function removeLogo() {
+        logoData = null;
+        $('logoPreview').style.display = 'none';
+        $('logoPlaceholder').style.display = '';
+        $('logoThumb').classList.remove('has-logo');
+        $('logoTitle').textContent = '尚未上傳 Logo';
+        $('logoRemoveBtn').style.display = 'none';
+        logoInput.value = '';
+    }
 
-                // 建立照片頁內容
-                const photoPageChildren = [];
-                
-                // 每頁4張照片（2欄 × 2列）
-                for (let pageStart = 0; pageStart < photos.length; pageStart += 4) {
-                    if (pageStart > 0) {
-                        photoPageChildren.push(new Paragraph({ children: [new PageBreak()] }));
-                    }
-                    
-                    const pagePhotos = photos.slice(pageStart, pageStart + 4);
-                    const photoRows = [];
-                    
-                    // 每兩張為一組（一列）
-                    for (let i = 0; i < pagePhotos.length; i += 2) {
-                        const photo1 = pagePhotos[i];
-                        const photo2 = pagePhotos[i + 1];
-                        
-                        // 照片列
-                        const photoCells = [];
-                        
-                        // 第一張照片
-                        const scaled1 = calculateScaledSizeEMU(photo1.width, photo1.height, photoWidthEMU, photoHeightEMU);
-                        photoCells.push(new TableCell({
-                            width: { size: 4680, type: WidthType.DXA },
-                            borders: cellBorders,
-                            verticalAlign: VerticalAlign.CENTER,
-                            children: [new Paragraph({
-                                alignment: AlignmentType.CENTER,
-                                children: [new ImageRun({
-                                    type: photo1.type,
-                                    data: photo1.buffer,
-                                    transformation: { width: emuToPixels(scaled1.width), height: emuToPixels(scaled1.height) }
-                                })]
-                            })]
-                        }));
-                        
-                        // 第二張照片（如果有）
-                        if (photo2) {
-                            const scaled2 = calculateScaledSizeEMU(photo2.width, photo2.height, photoWidthEMU, photoHeightEMU);
-                            photoCells.push(new TableCell({
-                                width: { size: 4680, type: WidthType.DXA },
-                                borders: cellBorders,
-                                verticalAlign: VerticalAlign.CENTER,
-                                children: [new Paragraph({
-                                    alignment: AlignmentType.CENTER,
-                                    children: [new ImageRun({
-                                        type: photo2.type,
-                                        data: photo2.buffer,
-                                        transformation: { width: emuToPixels(scaled2.width), height: emuToPixels(scaled2.height) }
-                                    })]
-                                })]
-                            }));
-                        } else {
-                            // 空白儲存格
-                            photoCells.push(new TableCell({
-                                width: { size: 4680, type: WidthType.DXA },
-                                borders: cellBorders,
-                                children: [new Paragraph({ children: [] })]
-                            }));
-                        }
-                        
-                        photoRows.push(new TableRow({
-                            height: { value: 5102, rule: "atLeast" },
-                            children: photoCells
-                        }));
-                        
-                        // 說明列
-                        const captionCells = [];
-                        
-                        // 第一張說明
-                        captionCells.push(new TableCell({
-                            width: { size: 4680, type: WidthType.DXA },
-                            borders: cellBorders,
-                            shading: { fill: LIGHT_TEAL_BG, type: ShadingType.CLEAR },
-                            verticalAlign: VerticalAlign.CENTER,
-                            children: [new Paragraph({
-                                alignment: AlignmentType.CENTER,
-                                children: [new TextRun({ text: photo1.caption, size: 20, font: "微軟正黑體" })]
-                            })]
-                        }));
-                        
-                        // 第二張說明（如果有）
-                        if (photo2) {
-                            captionCells.push(new TableCell({
-                                width: { size: 4680, type: WidthType.DXA },
-                                borders: cellBorders,
-                                shading: { fill: LIGHT_TEAL_BG, type: ShadingType.CLEAR },
-                                verticalAlign: VerticalAlign.CENTER,
-                                children: [new Paragraph({
-                                    alignment: AlignmentType.CENTER,
-                                    children: [new TextRun({ text: photo2.caption, size: 20, font: "微軟正黑體" })]
-                                })]
-                            }));
-                        } else {
-                            captionCells.push(new TableCell({
-                                width: { size: 4680, type: WidthType.DXA },
-                                borders: cellBorders,
-                                shading: { fill: LIGHT_TEAL_BG, type: ShadingType.CLEAR },
-                                children: [new Paragraph({ children: [] })]
-                            }));
-                        }
-                        
-                        photoRows.push(new TableRow({
-                            height: { value: 1134, rule: "atLeast" },
-                            children: captionCells
-                        }));
-                    }
-                    
-                    // 建立照片表格 - 置中
-                    const photoTable = new Table({
-                        alignment: AlignmentType.CENTER,
-                        columnWidths: [4680, 4680],
-                        rows: photoRows
-                    });
-                    
-                    photoPageChildren.push(photoTable);
+    // ===== Upload =====
+    uploadZone.addEventListener('click', () => fileInput.click());
+    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('active'); });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('active'));
+    uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('active'); handleFiles(e.dataTransfer.files); });
+    fileInput.addEventListener('change', e => { handleFiles(e.target.files); fileInput.value = ''; });
+
+    function getImageDimensions(dataUrl) {
+        return new Promise(resolve => {
+            const img = new Image();
+            img.onload = () => resolve({ width: img.width, height: img.height });
+            img.onerror = () => resolve({ width: 800, height: 600 });
+            img.src = dataUrl;
+        });
+    }
+
+    // Compress image for smaller docx file
+    function compressImage(dataUrl, maxDim = 1600, quality = 0.82) {
+        return new Promise(resolve => {
+            const img = new Image();
+            img.onload = () => {
+                let { width, height } = img;
+                if (width > maxDim || height > maxDim) {
+                    const ratio = Math.min(maxDim / width, maxDim / height);
+                    width = Math.round(width * ratio);
+                    height = Math.round(height * ratio);
                 }
-                
-                // 建立頁首（只用於照片頁）- 置中
-                const headerTable = new Table({
-                    alignment: AlignmentType.CENTER,
-                    columnWidths: [2000, 5360, 2000],
-                    rows: [
-                        new TableRow({
-                            children: [
-                                // 左欄 - Logo（如果有）或空白
-                                new TableCell({
-                                    width: { size: 2000, type: WidthType.DXA },
-                                    borders: noBorders,
-                                    children: logoData ? [new Paragraph({
-                                        children: [new ImageRun({
-                                            type: logoData.type,
-                                            data: logoData.data,
-                                            transformation: { 
-                                                width: emuToPixels(headerLogoWidthEMU), 
-                                                height: emuToPixels(headerLogoHeightEMU) 
-                                            }
-                                        })]
-                                    })] : [new Paragraph({ children: [] })]
-                                }),
-                                // 中欄 - 公司名稱
-                                new TableCell({
-                                    width: { size: 5360, type: WidthType.DXA },
-                                    borders: noBorders,
-                                    verticalAlign: VerticalAlign.CENTER,
-                                    children: [new Paragraph({
-                                        alignment: AlignmentType.CENTER,
-                                        children: [new TextRun({ text: "尚緯消防工程行", bold: true, color: DARK_TEAL, size: 28, font: "微軟正黑體" })]
-                                    })]
-                                }),
-                                // 右欄 - 標語
-                                new TableCell({
-                                    width: { size: 2000, type: WidthType.DXA },
-                                    borders: noBorders,
-                                    verticalAlign: VerticalAlign.CENTER,
-                                    children: [new Paragraph({
-                                        alignment: AlignmentType.CENTER,
-                                        children: [new TextRun({ text: "專業 • 品質 • 安全", color: RED, size: 18, font: "微軟正黑體" })]
-                                    })]
-                                })
-                            ]
-                        })
-                    ]
-                });
-                
-                const photoHeader = new Header({
-                    children: [
-                        headerTable,
-                        // 青綠色分隔線
-                        new Paragraph({
-                            border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: TEAL } },
-                            spacing: { after: 200 },
-                            children: []
-                        })
-                    ]
-                });
-                
-                // 建立頁尾（只用於照片頁）
-                const photoFooter = new Footer({
-                    children: [
-                        // 青綠色上邊框
-                        new Paragraph({
-                            border: { top: { style: BorderStyle.SINGLE, size: 6, color: TEAL } },
-                            children: []
-                        }),
-                        // 頁碼
-                        new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            spacing: { before: 100 },
-                            children: [
-                                new TextRun({ text: "第 ", color: GRAY, size: 18, font: "微軟正黑體" }),
-                                new TextRun({ children: [PageNumber.CURRENT], bold: true, color: TEAL, size: 18, font: "微軟正黑體" }),
-                                new TextRun({ text: " 頁，共 ", color: GRAY, size: 18, font: "微軟正黑體" }),
-                                new TextRun({ children: [PageNumber.TOTAL_PAGES], bold: true, color: TEAL, size: 18, font: "微軟正黑體" }),
-                                new TextRun({ text: " 頁", color: GRAY, size: 18, font: "微軟正黑體" })
-                            ]
-                        })
-                    ]
-                });
-                
-                // 建立文件（兩個 section：封面頁 + 照片頁）
-                const doc = new Document({
-                    sections: [
-                        // 第一個 section：封面頁（無頁首頁尾）
-                        {
-                            properties: {
-                                page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } }
-                            },
-                            children: coverChildren
-                        },
-                        // 第二個 section：照片頁（有頁首頁尾）
-                        {
-                            properties: {
-                                page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } }
-                            },
-                            headers: { default: photoHeader },
-                            footers: { default: photoFooter },
-                            children: photoPageChildren
-                        }
-                    ]
-                });
-                
-                const buffer = await Packer.toBlob(doc);
-                const fileName = `施工報告_${projectName.substring(0, 15).replace(/[\\/:*?"<>|]/g, '')}_${new Date().toISOString().slice(0, 10)}.docx`;
-                saveAs(buffer, fileName);
-                showSuccess();
-            } catch (err) {
-                console.error('產生報告錯誤:', err);
-                showError('❌ 產生報告時發生錯誤：' + err.message);
-            } finally {
-                loading.classList.remove('show');
-                generateBtn.disabled = false;
+                const canvas = document.createElement('canvas');
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                canvas.toBlob(blob => {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve({ buffer: e.target.result, width, height });
+                    reader.readAsArrayBuffer(blob);
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = () => resolve(null);
+            img.src = dataUrl;
+        });
+    }
+
+    async function handleFiles(files) {
+        const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+        if (!validFiles.length) return;
+
+        for (const file of validFiles) {
+            const id = 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+            const dataUrl = await new Promise(r => {
+                const fr = new FileReader();
+                fr.onload = e => r(e.target.result);
+                fr.readAsDataURL(file);
+            });
+            const dims = await getImageDimensions(dataUrl);
+            const buffer = await new Promise(r => {
+                const fr = new FileReader();
+                fr.onload = e => r(e.target.result);
+                fr.readAsArrayBuffer(file);
+            });
+            photos.push({
+                id, name: file.name, data: dataUrl, buffer,
+                type: file.type.includes('png') ? 'png' : 'jpg',
+                caption: '', width: dims.width, height: dims.height
+            });
+        }
+        renderPhotos();
+    }
+
+    // ===== Render Photos =====
+    function renderPhotos() {
+        const count = photos.length;
+        $('photoCountLabel').textContent = count ? `${count} 張` : '';
+        $('batchCaptionArea').classList.toggle('show', count > 0);
+        $('optionRow').style.display = count > 0 ? '' : 'none';
+
+        if (count === 0) {
+            photoContainer.innerHTML = '';
+            photoContainer.appendChild(emptyPhotos);
+            emptyPhotos.style.display = '';
+            return;
+        }
+        emptyPhotos.style.display = 'none';
+
+        let html = '<div class="photo-status"><span class="photo-count-badge">📷 共 ' + count + ' 張照片</span><span class="sort-hint">拖曳卡片或按箭頭排序</span></div><div class="photo-grid">';
+        photos.forEach((p, i) => {
+            const filled = p.caption.trim() ? ' filled' : '';
+            html += `<div class="photo-card" data-index="${i}" draggable="true">
+                <span class="num">${i + 1}</span>
+                <div class="actions">
+                    <button class="btn-move" onclick="movePhoto(${i},-1)" ${i === 0 ? 'disabled' : ''} title="前移">◀</button>
+                    <button class="btn-move" onclick="movePhoto(${i},1)" ${i === count - 1 ? 'disabled' : ''} title="後移">▶</button>
+                    <button class="btn-del" onclick="deletePhoto('${p.id}')" title="刪除">✕</button>
+                </div>
+                <img class="thumb" src="${p.data}" alt="${p.name}">
+                <input class="caption-input${filled}" type="text" id="cap_${p.id}" placeholder="輸入照片說明..."
+                    value="${escapeAttr(p.caption)}" oninput="updateCaption('${p.id}',this.value,this)">
+            </div>`;
+        });
+        html += '</div>';
+        photoContainer.innerHTML = html;
+        initDragAndDrop();
+    }
+
+    function escapeAttr(s) { return s.replace(/"/g, '&quot;'); }
+
+    // ===== Drag & Drop =====
+    function initDragAndDrop() {
+        photoContainer.querySelectorAll('.photo-card').forEach(card => {
+            card.addEventListener('dragstart', function(e) {
+                draggedIndex = +this.dataset.index;
+                this.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', draggedIndex);
+            });
+            card.addEventListener('dragend', function() {
+                this.classList.remove('dragging');
+                this.style.opacity = '';
+                photoContainer.querySelectorAll('.photo-card').forEach(c => c.classList.remove('drag-over'));
+                draggedIndex = null;
+            });
+            card.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+            card.addEventListener('dragenter', function(e) {
+                e.preventDefault();
+                if (+this.dataset.index !== draggedIndex) this.classList.add('drag-over');
+            });
+            card.addEventListener('dragleave', function() { this.classList.remove('drag-over'); });
+            card.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+                const target = +this.dataset.index;
+                if (draggedIndex !== null && draggedIndex !== target) {
+                    syncCaptions();
+                    const [moved] = photos.splice(draggedIndex, 1);
+                    photos.splice(target, 0, moved);
+                    renderPhotos();
+                }
+            });
+        });
+    }
+
+    function movePhoto(i, dir) {
+        const j = i + dir;
+        if (j < 0 || j >= photos.length) return;
+        syncCaptions();
+        [photos[i], photos[j]] = [photos[j], photos[i]];
+        renderPhotos();
+    }
+
+    function updateCaption(id, val, el) {
+        const p = photos.find(x => x.id === id);
+        if (p) { p.caption = val; el.classList.toggle('filled', val.trim() !== ''); }
+    }
+
+    function deletePhoto(id) {
+        syncCaptions();
+        photos = photos.filter(p => p.id !== id);
+        renderPhotos();
+    }
+
+    function syncCaptions() {
+        photos.forEach(p => {
+            const el = document.getElementById('cap_' + p.id);
+            if (el) p.caption = el.value;
+        });
+    }
+
+    function applyBatchCaption() {
+        const val = $('batchCaptionInput').value.trim();
+        if (!val) return;
+        syncCaptions();
+        let applied = 0;
+        photos.forEach(p => { if (!p.caption.trim()) { p.caption = val; applied++; } });
+        renderPhotos();
+        showToast(applied ? `已套用 ${applied} 張照片的說明` : '所有照片已有說明，未做變更');
+    }
+
+    // ===== EMU Helpers =====
+    function calcScaledEMU(w, h, maxW, maxH) {
+        const r = Math.min(maxW / w, maxH / h);
+        return { width: Math.round(w * r), height: Math.round(h * r) };
+    }
+    function emuToPx(emu) { return Math.round(emu / 914400 * 96); }
+
+    // ===== Generate Report =====
+    async function generateReport() {
+        syncCaptions();
+        const projectName = $('projectName').value.trim();
+        const reportDate = $('reportDate').value.trim() || new Date().toLocaleDateString('zh-TW');
+        const workDate = $('workDate').value.trim();
+        const description = $('description').value.trim();
+        const shouldCompress = $('compressToggle').checked;
+
+        if (!projectName) { showToast('請填寫工程名稱', 'error'); $('projectName').focus(); return; }
+        if (!photos.length) { showToast('請上傳至少一張照片', 'error'); return; }
+        const mi = photos.findIndex(p => !p.caption.trim());
+        if (mi >= 0) {
+            showToast(`請為第 ${mi + 1} 張照片填寫說明`, 'error');
+            const el = document.getElementById('cap_' + photos[mi].id);
+            if (el) el.focus();
+            return;
+        }
+
+        loading.classList.add('show');
+        generateBtn.disabled = true;
+        await new Promise(r => setTimeout(r, 80));
+
+        try {
+            // Optionally compress images
+            let processedPhotos = photos;
+            if (shouldCompress) {
+                $('loadingText').textContent = '正在壓縮照片...';
+                processedPhotos = [];
+                for (let i = 0; i < photos.length; i++) {
+                    $('loadingText').textContent = `壓縮照片中 (${i + 1}/${photos.length})...`;
+                    const compressed = await compressImage(photos[i].data);
+                    if (compressed) {
+                        processedPhotos.push({
+                            ...photos[i],
+                            buffer: compressed.buffer,
+                            width: compressed.width,
+                            height: compressed.height,
+                            type: 'jpg'
+                        });
+                    } else {
+                        processedPhotos.push(photos[i]);
+                    }
+                }
             }
+            $('loadingText').textContent = '正在產生 Word 報告...';
+
+            const TEAL = "2AAFB3", DARK_TEAL = "1A7A7D", RED = "E63B2E";
+            const GRAY = "666666", LIGHT_GRAY = "CCCCCC", LIGHT_TEAL_BG = "F0FAFA";
+            const thinBorder = { style: BorderStyle.SINGLE, size: 1, color: LIGHT_GRAY };
+            const noBorder = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
+            const cellBorders = { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder };
+            const noBorders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
+
+            const coverLogoWEMU = 1143000, coverLogoHEMU = 1333500;
+            const photoWEMU = 2095500, photoHEMU = 2790825;
+            const headerLogoWEMU = 500062, headerLogoHEMU = 583406;
+
+            // ===== Cover Page =====
+            const cover = [];
+
+            if (logoData) {
+                const ls = calcScaledEMU(coverLogoWEMU, coverLogoHEMU, coverLogoWEMU, coverLogoHEMU);
+                cover.push(new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    spacing: { before: 400, after: 100 },
+                    children: [new ImageRun({ type: logoData.type, data: logoData.data, transformation: { width: emuToPx(ls.width), height: emuToPx(ls.height) } })]
+                }));
+            } else {
+                cover.push(new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    spacing: { before: 600, after: 200 },
+                    children: [new TextRun({ text: "尚緯消防工程行", bold: true, size: 56, color: DARK_TEAL, font: "微軟正黑體" })]
+                }));
+            }
+
+            cover.push(new Paragraph({
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 200, after: 100 },
+                children: [new TextRun({ text: "施 工 報 告 書", bold: true, size: 72, color: TEAL, font: "微軟正黑體" })]
+            }));
+            cover.push(new Paragraph({
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 400 },
+                children: [new TextRun({ text: "━━━━━━━━━━━━━━━━━━━━", color: TEAL, size: 20 })]
+            }));
+
+            // Info table rows
+            const infoRows = [
+                ["工程名稱", projectName],
+                ["報告日期", reportDate],
+            ];
+            if (workDate) infoRows.push(["施工日期", workDate]);
+
+            const infoTable = new Table({
+                alignment: AlignmentType.CENTER,
+                columnWidths: [2340, 7020],
+                rows: infoRows.map(([label, value]) => new TableRow({
+                    children: [
+                        new TableCell({
+                            width: { size: 2340, type: WidthType.DXA },
+                            borders: cellBorders,
+                            shading: { fill: TEAL, type: ShadingType.CLEAR },
+                            verticalAlign: VerticalAlign.CENTER,
+                            children: [new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 120, after: 120 }, children: [new TextRun({ text: label, bold: true, color: "FFFFFF", size: 24, font: "微軟正黑體" })] })]
+                        }),
+                        new TableCell({
+                            width: { size: 7020, type: WidthType.DXA },
+                            borders: cellBorders,
+                            verticalAlign: VerticalAlign.CENTER,
+                            children: [new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 120, after: 120 }, children: [new TextRun({ text: value, size: 24, font: "微軟正黑體" })] })]
+                        })
+                    ]
+                }))
+            });
+            cover.push(infoTable);
+            cover.push(new Paragraph({ spacing: { before: 400, after: 200 }, children: [] }));
+            cover.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 200, after: 200 }, children: [new TextRun({ text: "一、施工說明", bold: true, size: 28, color: TEAL, font: "微軟正黑體" })] }));
+
+            const descTable = new Table({
+                alignment: AlignmentType.CENTER,
+                columnWidths: [9360],
+                rows: [new TableRow({
+                    height: { value: 4762, rule: "atLeast" },
+                    children: [new TableCell({
+                        width: { size: 9360, type: WidthType.DXA },
+                        borders: cellBorders,
+                        children: [new Paragraph({ spacing: { before: 200, after: 200 }, indent: { left: 200 }, children: [new TextRun({ text: description || "（請填入施工說明內容）", size: 22, font: "微軟正黑體" })] })]
+                    })]
+                })]
+            });
+            cover.push(descTable);
+            cover.push(new Paragraph({ spacing: { before: 400, after: 200 }, children: [] }));
+            cover.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 200 }, children: [new TextRun({ text: "二、施工照片(如下頁)", bold: true, size: 28, color: TEAL, font: "微軟正黑體" })] }));
+
+            // ===== Photo Pages =====
+            const photoPages = [];
+            for (let ps = 0; ps < processedPhotos.length; ps += 4) {
+                if (ps > 0) photoPages.push(new Paragraph({ children: [new PageBreak()] }));
+                const page = processedPhotos.slice(ps, ps + 4);
+                const rows = [];
+
+                for (let i = 0; i < page.length; i += 2) {
+                    const p1 = page[i], p2 = page[i + 1];
+                    const photoCells = [];
+                    const captionCells = [];
+
+                    // Photo 1
+                    const s1 = calcScaledEMU(p1.width, p1.height, photoWEMU, photoHEMU);
+                    photoCells.push(new TableCell({
+                        width: { size: 4680, type: WidthType.DXA }, borders: cellBorders, verticalAlign: VerticalAlign.CENTER,
+                        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new ImageRun({ type: p1.type, data: p1.buffer, transformation: { width: emuToPx(s1.width), height: emuToPx(s1.height) } })] })]
+                    }));
+                    captionCells.push(new TableCell({
+                        width: { size: 4680, type: WidthType.DXA }, borders: cellBorders, shading: { fill: LIGHT_TEAL_BG, type: ShadingType.CLEAR }, verticalAlign: VerticalAlign.CENTER,
+                        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: p1.caption, size: 20, font: "微軟正黑體" })] })]
+                    }));
+
+                    // Photo 2
+                    if (p2) {
+                        const s2 = calcScaledEMU(p2.width, p2.height, photoWEMU, photoHEMU);
+                        photoCells.push(new TableCell({
+                            width: { size: 4680, type: WidthType.DXA }, borders: cellBorders, verticalAlign: VerticalAlign.CENTER,
+                            children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new ImageRun({ type: p2.type, data: p2.buffer, transformation: { width: emuToPx(s2.width), height: emuToPx(s2.height) } })] })]
+                        }));
+                        captionCells.push(new TableCell({
+                            width: { size: 4680, type: WidthType.DXA }, borders: cellBorders, shading: { fill: LIGHT_TEAL_BG, type: ShadingType.CLEAR }, verticalAlign: VerticalAlign.CENTER,
+                            children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: p2.caption, size: 20, font: "微軟正黑體" })] })]
+                        }));
+                    } else {
+                        photoCells.push(new TableCell({ width: { size: 4680, type: WidthType.DXA }, borders: cellBorders, children: [new Paragraph({ children: [] })] }));
+                        captionCells.push(new TableCell({ width: { size: 4680, type: WidthType.DXA }, borders: cellBorders, shading: { fill: LIGHT_TEAL_BG, type: ShadingType.CLEAR }, children: [new Paragraph({ children: [] })] }));
+                    }
+
+                    rows.push(new TableRow({ height: { value: 5102, rule: "atLeast" }, children: photoCells }));
+                    rows.push(new TableRow({ height: { value: 1134, rule: "atLeast" }, children: captionCells }));
+                }
+
+                photoPages.push(new Table({ alignment: AlignmentType.CENTER, columnWidths: [4680, 4680], rows }));
+            }
+
+            // ===== Header / Footer =====
+            const headerTable = new Table({
+                alignment: AlignmentType.CENTER,
+                columnWidths: [2000, 5360, 2000],
+                rows: [new TableRow({
+                    children: [
+                        new TableCell({
+                            width: { size: 2000, type: WidthType.DXA }, borders: noBorders,
+                            children: logoData ? [new Paragraph({ children: [new ImageRun({ type: logoData.type, data: logoData.data, transformation: { width: emuToPx(headerLogoWEMU), height: emuToPx(headerLogoHEMU) } })] })] : [new Paragraph({ children: [] })]
+                        }),
+                        new TableCell({
+                            width: { size: 5360, type: WidthType.DXA }, borders: noBorders, verticalAlign: VerticalAlign.CENTER,
+                            children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "尚緯消防工程行", bold: true, color: DARK_TEAL, size: 28, font: "微軟正黑體" })] })]
+                        }),
+                        new TableCell({
+                            width: { size: 2000, type: WidthType.DXA }, borders: noBorders, verticalAlign: VerticalAlign.CENTER,
+                            children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "專業 • 品質 • 安全", color: RED, size: 18, font: "微軟正黑體" })] })]
+                        })
+                    ]
+                })]
+            });
+
+            const photoHeader = new Header({
+                children: [
+                    headerTable,
+                    new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: TEAL } }, spacing: { after: 200 }, children: [] })
+                ]
+            });
+
+            const photoFooter = new Footer({
+                children: [
+                    new Paragraph({ border: { top: { style: BorderStyle.SINGLE, size: 6, color: TEAL } }, children: [] }),
+                    new Paragraph({
+                        alignment: AlignmentType.CENTER, spacing: { before: 100 },
+                        children: [
+                            new TextRun({ text: "第 ", color: GRAY, size: 18, font: "微軟正黑體" }),
+                            new TextRun({ children: [PageNumber.CURRENT], bold: true, color: TEAL, size: 18, font: "微軟正黑體" }),
+                            new TextRun({ text: " 頁，共 ", color: GRAY, size: 18, font: "微軟正黑體" }),
+                            new TextRun({ children: [PageNumber.TOTAL_PAGES], bold: true, color: TEAL, size: 18, font: "微軟正黑體" }),
+                            new TextRun({ text: " 頁", color: GRAY, size: 18, font: "微軟正黑體" })
+                        ]
+                    })
+                ]
+            });
+
+            const doc = new Document({
+                sections: [
+                    { properties: { page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } } }, children: cover },
+                    { properties: { page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } } }, headers: { default: photoHeader }, footers: { default: photoFooter }, children: photoPages }
+                ]
+            });
+
+            const blob = await Packer.toBlob(doc);
+            const safeName = projectName.substring(0, 15).replace(/[\\/:*?"<>|]/g, '');
+            saveAs(blob, `施工報告_${safeName}_${new Date().toISOString().slice(0, 10)}.docx`);
+            showToast('✅ 報告已產生並下載！');
+        } catch (err) {
+            console.error('產生報告錯誤:', err);
+            showToast('❌ 產生報告時發生錯誤：' + err.message, 'error');
+        } finally {
+            loading.classList.remove('show');
+            generateBtn.disabled = false;
         }
+    }
     </script>
 </body>
 </html>
