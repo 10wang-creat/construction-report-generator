@@ -508,6 +508,18 @@
             color: var(--slate-400);
         }
         .footer strong { color: var(--teal-dark); font-weight: 600; }
+        .report-counter {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--teal-light);
+            color: var(--teal-dark);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
 
         /* ===== Responsive ===== */
         @media (max-width: 640px) {
@@ -623,6 +635,7 @@
         </div>
 
         <div class="footer">
+            <div class="report-counter" id="reportCounter"></div>
             <strong>尚緯消防工程行</strong> ・ 專業 • 品質 • 安全
         </div>
     </main>
@@ -657,6 +670,27 @@
     const generateBtn = $('generateBtn');
     const loading = $('loading');
     const toastEl = $('toast');
+
+    // ===== Report Counter (localStorage) =====
+    function getReportCount() {
+        return parseInt(localStorage.getItem('sw_report_count') || '0', 10);
+    }
+    function incrementReportCount() {
+        const count = getReportCount() + 1;
+        localStorage.setItem('sw_report_count', count.toString());
+        updateCounterDisplay();
+        return count;
+    }
+    function updateCounterDisplay() {
+        const count = getReportCount();
+        const el = $('reportCounter');
+        if (el) {
+            el.textContent = count > 0 ? '📊 已累計產生 ' + count + ' 份報告' : '';
+            el.style.display = count > 0 ? '' : 'none';
+        }
+    }
+    // Initialize counter display on load
+    setTimeout(updateCounterDisplay, 100);
 
     // ===== Toast =====
     let toastTimer;
@@ -1263,6 +1297,7 @@
             const blob = await Packer.toBlob(doc);
             const safeName = projectName.substring(0, 15).replace(/[\\/:*?"<>|]/g, '');
             saveAs(blob, `施工報告_${safeName}_${new Date().toISOString().slice(0, 10)}.docx`);
+            incrementReportCount();
             showToast('✅ 報告已產生並下載！');
         } catch (err) {
             console.error('產生報告錯誤:', err);
@@ -1273,5 +1308,7 @@
         }
     }
     </script>
+    <!-- Vercel Web Analytics -->
+    <script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
